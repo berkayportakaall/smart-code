@@ -1,0 +1,979 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="SMART CODE kodlama oyunu: 100 bulmaca, tahta kurulumu ve çözümler.">
+<meta name="theme-color" content="#1d3a6b">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="SMART CODE">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>SMART CODE Veli Rehberi</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+/* Yerlesim: oyun kutusu mantigi; telefonda tek sutun, genis ekranda tahta solda sabit, bilgiler sagda. */
+:root {
+  --bg: #eef1f6;
+  --surface: #ffffff;
+  --ink: #17223a;
+  --muted: #586379;
+  --line: #d6dce7;
+  --brand: #1d3a6b;
+  --act: #2b59d4;   --act-bg: #e5ecff;
+  --if: #b67f00;    --if-fill: #f7c948; --if-bg: #fff4d4;
+  --go: #19804a;    --go-bg: #def3e6;
+  --stop: #c4362f;  --stop-bg: #fde5e3;
+  --cry: #7446d6;
+  --wall: #646d82;  --wall-line: #8b93a5;
+  --pit: #1e355e;   --pit-rim: #4b6595;
+  --cell: #fbfcfe;  --cell-alt: #f0f3f9; --grid: #c7cfdd;
+  --robot: #17223a; --robot-ink: #ffffff;
+  --trail: #2b59d4;
+  --star: #e2a40b;
+  --f-display: "Baloo 2", "Trebuchet MS", system-ui, sans-serif;
+  --f-body: "Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --r: 10px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0d1424; --surface: #151f35; --ink: #e6ebf4; --muted: #9ba7be; --line: #28344f; --brand: #a9c2f2;
+    --act: #87a6ff; --act-bg: #1c2a52; --if: #f3c74f; --if-fill: #f3c74f; --if-bg: #372d12;
+    --go: #52c98a; --go-bg: #15352a; --stop: #f37a72; --stop-bg: #3b1d1d;
+    --cry: #ae90ff; --wall: #7d879d; --wall-line: #a3abbd; --pit: #050a15; --pit-rim: #3b5584;
+    --cell: #1a2540; --cell-alt: #17213a; --grid: #2f3c5c; --robot: #e6ebf4; --robot-ink: #0d1424;
+    --trail: #87a6ff; --star: #f3c74f; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0d1424; --surface: #151f35; --ink: #e6ebf4; --muted: #9ba7be; --line: #28344f; --brand: #a9c2f2;
+  --act: #87a6ff; --act-bg: #1c2a52; --if: #f3c74f; --if-fill: #f3c74f; --if-bg: #372d12;
+  --go: #52c98a; --go-bg: #15352a; --stop: #f37a72; --stop-bg: #3b1d1d;
+  --cry: #ae90ff; --wall: #7d879d; --wall-line: #a3abbd; --pit: #050a15; --pit-rim: #3b5584;
+  --cell: #1a2540; --cell-alt: #17213a; --grid: #2f3c5c; --robot: #e6ebf4; --robot-ink: #0d1424;
+  --trail: #87a6ff; --star: #f3c74f; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { background: var(--bg); }
+body { color: var(--ink); font-family: var(--f-body); font-size: 16px; line-height: 1.5; -webkit-font-smoothing: antialiased; }
+button { font: inherit; color: inherit; cursor: pointer; }
+button:focus-visible, a:focus-visible, summary:focus-visible { outline: 3px solid var(--act); outline-offset: 2px; border-radius: 6px; }
+h1, h2, h3 { font-family: var(--f-display); line-height: 1.15; text-wrap: balance; margin: 0; }
+p { margin: 0; }
+.wrap { max-width: 1060px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.mono { font-family: var(--f-mono); font-variant-numeric: tabular-nums; }
+
+/* ---------- ust bant ---------- */
+.top { background: var(--surface); border-bottom: 1px solid var(--line); }
+.top .wrap { padding-block: 14px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.mark { width: 34px; height: 34px; display: grid; grid-template-columns: 1fr 1fr; gap: 3px; flex: none; }
+.mark i { border-radius: 3px; display: block; }
+.mark i:nth-child(1) { background: var(--go); } .mark i:nth-child(2) { background: var(--act); }
+.mark i:nth-child(3) { background: var(--if-fill); } .mark i:nth-child(4) { background: var(--stop); }
+.brand { display: flex; flex-direction: column; min-width: 0; }
+.brand b { font-family: var(--f-display); font-weight: 800; font-size: 1.45rem; letter-spacing: .02em; color: var(--brand); line-height: 1; }
+.brand span { color: var(--muted); font-size: .86rem; }
+.top .spacer { flex: 1; }
+.progress { font-size: .86rem; color: var(--muted); display: flex; align-items: center; gap: 8px; }
+.progress .bar { width: 90px; height: 8px; border-radius: 99px; background: var(--cell-alt); border: 1px solid var(--line); overflow: hidden; }
+.progress .bar i { display: block; height: 100%; background: var(--go); width: 0; }
+
+/* ---------- ana sayfa ---------- */
+.home { padding-block: 22px 40px; display: grid; gap: 22px; }
+.lead { max-width: 62ch; color: var(--muted); }
+.lead strong { color: var(--ink); }
+.tabs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.tab { border: 1.5px solid var(--line); background: var(--surface); border-radius: var(--r); padding: 10px 12px; text-align: left; display: flex; flex-direction: column; gap: 2px; }
+.tab b { font-family: var(--f-display); font-size: 1.15rem; line-height: 1.1; }
+.tab span { font-size: .8rem; color: var(--muted); }
+.tab[aria-selected="true"] { border-color: currentColor; box-shadow: inset 0 0 0 1px currentColor; }
+.tab.k { color: var(--go); } .tab.o { color: var(--if); } .tab.z { color: var(--stop); }
+.tab span, .tab b { color: var(--ink); }
+.tab[aria-selected="true"] b { color: inherit; }
+.tab.k[aria-selected="true"] b { color: var(--go); } .tab.o[aria-selected="true"] b { color: var(--if); } .tab.z[aria-selected="true"] b { color: var(--stop); }
+.tabnote { color: var(--muted); font-size: .92rem; margin-top: -8px; }
+.install { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 16px; background: var(--act-bg); border: 1px solid var(--act); border-radius: 14px; padding: 14px 16px; }
+.install > div { flex: 1 1 240px; min-width: 0; display: grid; gap: 2px; }
+.install > div > b { font-family: var(--f-display); font-size: 1.1rem; color: var(--act); }
+.install p { font-size: .92rem; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(62px, 1fr)); gap: 8px; }
+.chaps { display: grid; gap: 22px; }
+.chap { display: grid; gap: 10px; }
+.chap-h { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 4px 12px; align-items: center; }
+.chap-no { width: 30px; height: 30px; border-radius: 8px; display: grid; place-items: center; font-family: var(--f-display); font-weight: 800; font-size: 1rem; background: var(--brand); color: var(--surface); }
+.chap-h b { font-family: var(--f-display); font-size: 1.15rem; line-height: 1.15; display: block; }
+.chap-h span.g { color: var(--muted); font-size: .88rem; display: block; }
+.chap-h .chap-r { font-family: var(--f-mono); font-size: .8rem; color: var(--muted); white-space: nowrap; }
+.chap-h .chap-r.done { color: var(--go); font-weight: 600; }
+.chapline { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; color: var(--muted); font-size: .92rem; }
+.chapline b { font-family: var(--f-display); font-size: 1.1rem; color: var(--ink); }
+.lvl { aspect-ratio: 1; max-width: 100%; border: 1px solid var(--line); border-radius: 9px; background: var(--surface); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; position: relative; transition: transform .12s ease; }
+.lvl:hover { transform: translateY(-1px); border-color: var(--muted); }
+.lvl .num { font-family: var(--f-display); font-weight: 700; font-size: 1.3rem; line-height: 1; }
+.lvl .st { font-size: .7rem; letter-spacing: 1px; color: var(--line); line-height: 1; height: .8rem; }
+.lvl .st .on { color: var(--star); }
+.lvl.done { background: var(--cell-alt); }
+
+.rules { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 18px; display: grid; gap: 16px; }
+.rules h2 { font-size: 1.35rem; }
+.rules ol { margin: 0; padding-left: 1.3rem; display: grid; gap: 6px; max-width: 70ch; }
+.rules .cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 18px 28px; }
+.rules h3 { font-size: 1.05rem; margin-bottom: 6px; }
+.legend { display: grid; gap: 8px; }
+.legend div { display: grid; grid-template-columns: auto 1fr; gap: 10px; align-items: start; font-size: .93rem; }
+.legend .tile { justify-self: start; }
+
+/* ---------- parca taslari (fiziksel parcalara benzer) ---------- */
+.tile { display: inline-flex; align-items: center; gap: 6px; border-radius: 7px; padding: 4px 9px; font-weight: 700; font-size: .82rem; letter-spacing: .03em; white-space: nowrap; border: 1.5px dashed transparent; }
+.tile .ic { font-size: 1rem; line-height: 1; }
+.tile.act { background: var(--act-bg); color: var(--act); border-color: var(--act); }
+.tile.if { background: var(--if-bg); color: var(--ink); border-color: var(--if); }
+.tile.if .dia { width: 11px; height: 11px; background: var(--if-fill); transform: rotate(45deg); border-radius: 2px; flex: none; }
+.tile.go { background: var(--go-bg); color: var(--go); border-color: var(--go); }
+.tile.stop { background: var(--stop-bg); color: var(--stop); border-color: var(--stop); }
+.tile.empty { background: transparent; color: var(--muted); border-color: var(--line); font-weight: 400; }
+
+/* ---------- bulmaca ---------- */
+.bar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--surface); border-bottom: 1px solid var(--line); }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--surface); }
+.bar .wrap { padding-block: 10px; display: flex; align-items: center; gap: 10px; }
+.back { border: 0; background: none; padding: 6px 4px; color: var(--muted); font-weight: 700; display: inline-flex; gap: 6px; align-items: center; }
+.bar h1 { font-size: 1.35rem; display: flex; align-items: baseline; gap: 8px; min-width: 0; }
+.chip { font-family: var(--f-body); font-size: .72rem; font-weight: 700; letter-spacing: .06em; padding: 2px 8px; border-radius: 99px; }
+.chip.k { background: var(--go-bg); color: var(--go); } .chip.o { background: var(--if-bg); color: var(--if); } .chip.z { background: var(--stop-bg); color: var(--stop); }
+.bar .spacer { flex: 1; }
+.nav { display: flex; gap: 6px; }
+.nav button { width: 38px; height: 38px; border-radius: 9px; border: 1px solid var(--line); background: var(--surface); font-size: 1.1rem; }
+.nav button:disabled { opacity: .35; cursor: default; }
+
+.puzzle { padding-block: 18px 48px; display: grid; gap: 22px; grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 900px) {
+  .puzzle { grid-template-columns: minmax(0, 470px) minmax(0, 1fr); align-items: start; gap: 32px; }
+  .col-board { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 76px); }
+}
+.col-board { display: grid; gap: 12px; min-width: 0; }
+.boardbox { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 10px; }
+.boardbox svg { display: block; width: 100%; height: auto; max-width: 100%; }
+.robot { transition: transform .42s cubic-bezier(.4,.1,.3,1); }
+.cry { transition: opacity .3s; }
+@media (prefers-reduced-motion: reduce) { .robot, .cry, .lvl { transition: none !important; } }
+
+.play { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 12px; display: grid; gap: 10px; }
+.play .btns { display: flex; gap: 6px; flex-wrap: wrap; }
+.btn { border: 1.5px solid var(--line); background: var(--surface); border-radius: 9px; padding: 8px 12px; font-weight: 700; font-size: .92rem; display: inline-flex; gap: 6px; align-items: center; }
+.btn.primary { background: var(--act); border-color: var(--act); color: var(--surface); }
+.btn.warn { background: var(--stop-bg); border-color: var(--stop); color: var(--stop); }
+.btn:disabled { opacity: .4; cursor: default; }
+.status { font-size: .92rem; min-height: 2.8em; color: var(--muted); }
+.status b { color: var(--ink); }
+.status .ok { color: var(--go); font-weight: 700; }
+.counter { font-family: var(--f-mono); font-size: .8rem; color: var(--muted); }
+
+.col-info { display: grid; gap: 16px; min-width: 0; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px; display: grid; gap: 12px; min-width: 0; }
+.card h2 { font-size: 1.2rem; display: flex; align-items: center; gap: 10px; }
+.card h2 .stepno { width: 26px; height: 26px; border-radius: 50%; background: var(--brand); color: var(--surface); font-size: .9rem; display: grid; place-items: center; flex: none; }
+.muted { color: var(--muted); font-size: .92rem; }
+
+.place { display: grid; gap: 8px; }
+.place .row { display: grid; grid-template-columns: 112px 1fr; gap: 10px; align-items: start; }
+.place .lab { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: .92rem; padding-top: 2px; }
+.place .lab svg { flex: none; }
+.coords { display: flex; flex-wrap: wrap; gap: 5px; }
+.co { font-family: var(--f-mono); font-weight: 600; font-size: .85rem; padding: 2px 7px; border-radius: 6px; background: var(--cell-alt); border: 1px solid var(--line); }
+.dirnote { font-size: .88rem; color: var(--muted); align-self: center; }
+
+.inv { display: flex; flex-wrap: wrap; gap: 8px; }
+.inv .item { display: inline-flex; align-items: center; gap: 6px; }
+.inv .x { font-family: var(--f-mono); font-weight: 600; font-size: .95rem; }
+.remind { font-size: .9rem; color: var(--muted); border-left: 3px solid var(--line); padding-left: 10px; display: grid; gap: 3px; }
+
+.lock { display: grid; gap: 10px; justify-items: start; }
+.lock .btns { display: flex; gap: 8px; flex-wrap: wrap; }
+.confirm { background: var(--stop-bg); border-radius: 10px; padding: 12px; display: grid; gap: 10px; width: 100%; }
+
+.flow { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.flow li { display: grid; grid-template-columns: 26px 1fr; gap: 8px; align-items: center; border-radius: 9px; padding: 4px 6px; transition: background .2s; }
+.flow .n { font-family: var(--f-mono); font-weight: 600; font-size: .82rem; color: var(--muted); text-align: right; }
+.flow li.now { background: var(--act-bg); }
+.flow li.now .n { color: var(--act); }
+.flow .cap { grid-template-columns: 26px 1fr; }
+.ifbox { border: 1.5px dashed var(--if); background: var(--if-bg); border-radius: 9px; padding: 8px; display: grid; gap: 6px; }
+.ifbox .q { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: .9rem; }
+.ifbox .q .dia { width: 12px; height: 12px; background: var(--if-fill); transform: rotate(45deg); border-radius: 2px; flex: none; }
+.arms { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.arm { display: flex; flex-direction: column; gap: 4px; padding: 6px; border-radius: 7px; background: var(--surface); border: 1px solid var(--line); min-width: 0; }
+.arm .al { font-size: .72rem; font-weight: 700; letter-spacing: .06em; }
+.arm.yes .al { color: var(--go); } .arm.no .al { color: var(--stop); }
+.arm.hit { border-color: var(--act); box-shadow: 0 0 0 2px var(--act-bg); }
+.hidden-line { height: 30px; border-radius: 7px; background: repeating-linear-gradient(45deg, var(--cell-alt) 0 8px, var(--bg) 8px 16px); border: 1px dashed var(--line); }
+
+.stars { display: flex; gap: 8px; flex-wrap: wrap; }
+.starbtn { border: 1.5px solid var(--line); background: var(--surface); border-radius: 10px; padding: 8px 12px; display: grid; gap: 2px; text-align: left; }
+.starbtn .s { color: var(--star); letter-spacing: 2px; font-size: 1.05rem; }
+.starbtn small { color: var(--muted); font-size: .8rem; }
+.starbtn[aria-pressed="true"] { border-color: var(--star); background: var(--if-bg); }
+.nextrow { display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* QR etiketi (basili parca: her temada beyaz zemin) */
+.qrpage { padding-block: 18px 40px; display: grid; gap: 16px; justify-items: start; }
+.qrpage .url { word-break: break-all; }
+.warnbox { background: var(--stop-bg); color: var(--ink); border: 1px solid var(--stop); border-radius: 10px; padding: 10px 12px; font-size: .92rem; }
+.labels { display: flex; flex-wrap: wrap; gap: 14px; align-items: flex-start; }
+.label { background: #ffffff; color: #17223a; border: 2px solid #1d3a6b; border-radius: 0.5cm; display: grid; grid-template-rows: auto 1fr auto; padding: 0.5cm; gap: 0.25cm; max-width: 100%; }
+.label.big { width: 10cm; aspect-ratio: 10 / 12; }
+.label.small { width: 6cm; aspect-ratio: 6 / 7.2; padding: 0.3cm; gap: 0.15cm; }
+.label .lh { display: flex; align-items: center; gap: 0.25cm; }
+.label .lm { display: grid; grid-template-columns: 1fr 1fr; gap: 3px; width: 1cm; height: 1cm; flex: none; }
+.label.small .lm { width: 0.65cm; height: 0.65cm; gap: 2px; }
+.label .lm i { border-radius: 3px; display: block; }
+.label .lm i:nth-child(1) { background: #19804a; } .label .lm i:nth-child(2) { background: #2b59d4; }
+.label .lm i:nth-child(3) { background: #f7c948; } .label .lm i:nth-child(4) { background: #c4362f; }
+.label .lt b { display: block; font-family: var(--f-display); font-weight: 800; font-size: 1.6rem; line-height: 1; color: #1d3a6b; }
+.label.small .lt b { font-size: 1.05rem; }
+.label .lt span { font-size: .8rem; color: #586379; }
+.label.small .lt span { font-size: .6rem; }
+.label .lq { display: grid; place-items: center; min-height: 0; }
+.label .lq svg { width: 100%; height: 100%; max-height: 100%; aspect-ratio: 1; }
+.label .lf { text-align: center; display: grid; gap: 2px; }
+.label .lf b { font-size: .95rem; }
+.label.small .lf b { font-size: .7rem; }
+.label .lf span { font-size: .72rem; color: #586379; }
+.label.small .lf span { font-size: .55rem; }
+.footlinks { display: flex; gap: 8px; flex-wrap: wrap; }
+@page { size: A4; margin: 1.2cm; }
+@media print {
+  .noprint, .top, .bar { display: none !important; }
+  html, body { background: #ffffff !important; }
+  .qrpage { padding: 0; }
+  .label { break-inside: avoid; }
+}
+
+@media (max-width: 480px) {
+  .place .row { grid-template-columns: 1fr; gap: 4px; }
+  .arms { grid-template-columns: 1fr; }
+  .bar h1 { font-size: 1.15rem; }
+  .tab { padding: 8px 9px; }
+  .tab b { font-size: 1.02rem; }
+}
+</style>
+
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+/* SMART CODE motoru, surum 2 (Python engine.py ile ayni kurallar) */
+const SC_N = 8, SC_DX = [0, 1, 0, -1], SC_DY = [-1, 0, 1, 0];
+function scInb(x, y) { return x >= 0 && x < SC_N && y >= 0 && y < SC_N; }
+function scRun(P) {
+  const key = (x, y) => x + ',' + y;
+  const walls = new Set(P.w.map(c => key(c[0], c[1])));
+  const pits = new Set(P.p.map(c => key(c[0], c[1])));
+  const cidx = new Map(P.c.map((c, i) => [key(c[0], c[1]), i]));
+  const call = (1 << P.c.length) - 1;
+  const full = P.prog.reduce((n, l) => n + (l[0] === 'A' ? 1 : 2), 0);
+  let x = P.s[0], y = P.s[1], d = P.s[2], cm = 0, ran = 0;
+  const steps = [];
+  for (let pc = 0; pc < P.prog.length; pc++) {
+    const l = P.prog[pc];
+    let act, cond = null;
+    ran++;
+    if (l[0] === 'A') act = l[1];
+    else {
+      const fx = x + SC_DX[d], fy = y + SC_DY[d];
+      cond = l[1] === 'W' ? (!scInb(fx, fy) || walls.has(key(fx, fy))) : (scInb(fx, fy) && pits.has(key(fx, fy)));
+      act = cond ? l[2] : null;
+      if (act) ran++;
+    }
+    const step = { pc, cond, act, from: [x, y, d] };
+    let status = null;
+    if (act === 'R') d = (d + 1) % 4;
+    else if (act === 'L') d = (d + 3) % 4;
+    else if (act === 'F' || act === 'B') {
+      const s = act === 'F' ? 1 : -1;
+      const nx = x + s * SC_DX[d], ny = y + s * SC_DY[d];
+      if (!scInb(nx, ny) || walls.has(key(nx, ny))) status = 'crash';
+      else if (pits.has(key(nx, ny))) status = 'fall';
+      else {
+        x = nx; y = ny;
+        const ci = cidx.get(key(x, y));
+        if (ci !== undefined && !((cm >> ci) & 1)) { cm |= 1 << ci; step.collect = ci; }
+        if (x === P.g[0] && y === P.g[1] && cm === call) status = ran === full ? 'ok' : 'rule';
+      }
+    }
+    step.to = [x, y, d]; step.cm = cm;
+    steps.push(step);
+    if (status) return { status, steps };
+  }
+  return { status: 'end', steps };
+}
+if (typeof module !== 'undefined') module.exports = { scRun };
+
+/* Kucuk QR kodu ureticisi (bayt kipi, M hata duzeltme seviyesi).
+   QR standardinin (ISO/IEC 18004) bilinen acik kaynak uygulamalariyla ayni algoritma. */
+const SC_QR = (function () {
+  const ECC_M = [-1, 10, 16, 26, 18, 24, 16, 18, 22, 22, 26, 30, 22, 22, 24, 24, 28, 28, 26, 26, 26, 26, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28];
+  const BLK_M = [-1, 1, 1, 1, 2, 2, 4, 4, 4, 5, 5, 5, 8, 9, 9, 10, 10, 11, 13, 14, 16, 17, 17, 18, 20, 21, 23, 25, 26, 28, 29, 31, 33, 35, 37, 38, 40, 43, 45, 47, 49];
+  function rawModules(v) {
+    let r = (16 * v + 128) * v + 64;
+    if (v >= 2) { const n = Math.floor(v / 7) + 2; r -= (25 * n - 10) * n - 55; if (v >= 7) r -= 36; }
+    return r;
+  }
+  const dataCodewords = v => Math.floor(rawModules(v) / 8) - ECC_M[v] * BLK_M[v];
+  function mul(x, y) {
+    let z = 0;
+    for (let i = 7; i >= 0; i--) { z = (z << 1) ^ ((z >>> 7) * 0x11D); z ^= ((y >>> i) & 1) * x; }
+    return z;
+  }
+  function divisor(deg) {
+    const r = new Array(deg).fill(0); r[deg - 1] = 1;
+    let root = 1;
+    for (let i = 0; i < deg; i++) {
+      for (let j = 0; j < r.length; j++) { r[j] = mul(r[j], root); if (j + 1 < r.length) r[j] ^= r[j + 1]; }
+      root = mul(root, 2);
+    }
+    return r;
+  }
+  function remainder(data, div) {
+    const r = div.map(() => 0);
+    for (const b of data) {
+      const f = b ^ r.shift(); r.push(0);
+      div.forEach((c, i) => { r[i] ^= mul(c, f); });
+    }
+    return r;
+  }
+  function encode(text) {
+    const bytes = Array.from(new TextEncoder().encode(text));
+    let v = 1, cap = 0;
+    for (; v <= 40; v++) {
+      cap = dataCodewords(v) * 8;
+      if (4 + (v < 10 ? 8 : 16) + bytes.length * 8 <= cap) break;
+    }
+    if (v > 40) throw new Error('Metin QR için çok uzun');
+    const bits = [];
+    const push = (val, n) => { for (let i = n - 1; i >= 0; i--) bits.push((val >>> i) & 1); };
+    push(4, 4); push(bytes.length, v < 10 ? 8 : 16); bytes.forEach(b => push(b, 8));
+    push(0, Math.min(4, cap - bits.length));
+    push(0, (8 - bits.length % 8) % 8);
+    for (let p = 0xEC; bits.length < cap; p ^= 0xEC ^ 0x11) push(p, 8);
+    const data = [];
+    for (let i = 0; i < bits.length; i += 8) { let b = 0; for (let j = 0; j < 8; j++) b = (b << 1) | bits[i + j]; data.push(b); }
+    // hata duzeltme bloklari ve araya yerlestirme
+    const nb = BLK_M[v], ecl = ECC_M[v], raw = Math.floor(rawModules(v) / 8);
+    const nShort = nb - raw % nb, shortLen = Math.floor(raw / nb);
+    const div = divisor(ecl), blocks = [];
+    for (let i = 0, k = 0; i < nb; i++) {
+      const d = data.slice(k, k + shortLen - ecl + (i < nShort ? 0 : 1));
+      k += d.length;
+      const e = remainder(d, div);
+      if (i < nShort) d.push(0);
+      blocks.push(d.concat(e));
+    }
+    const cw = [];
+    for (let i = 0; i < blocks[0].length; i++) blocks.forEach((b, j) => { if (i !== shortLen - ecl || j >= nShort) cw.push(b[i]); });
+    // matris
+    const size = v * 4 + 17;
+    const m = Array.from({ length: size }, () => new Array(size).fill(false));
+    const fn = Array.from({ length: size }, () => new Array(size).fill(false));
+    const set = (x, y, d) => { m[y][x] = d; fn[y][x] = true; };
+    for (let i = 0; i < size; i++) { set(6, i, i % 2 === 0); set(i, 6, i % 2 === 0); }
+    const finder = (cx, cy) => {
+      for (let dy = -4; dy <= 4; dy++) for (let dx = -4; dx <= 4; dx++) {
+        const x = cx + dx, y = cy + dy, d = Math.max(Math.abs(dx), Math.abs(dy));
+        if (x >= 0 && x < size && y >= 0 && y < size) set(x, y, d !== 2 && d !== 4);
+      }
+    };
+    finder(3, 3); finder(size - 4, 3); finder(3, size - 4);
+    if (v > 1) {
+      const n = Math.floor(v / 7) + 2;
+      const step = v === 32 ? 26 : Math.ceil((v * 4 + 4) / (n * 2 - 2)) * 2;
+      const pos = [6];
+      for (let p = size - 7; pos.length < n; p -= step) pos.splice(1, 0, p);
+      for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) {
+        if ((i === 0 && j === 0) || (i === 0 && j === n - 1) || (i === n - 1 && j === 0)) continue;
+        for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++) set(pos[i] + dx, pos[j] + dy, Math.max(Math.abs(dx), Math.abs(dy)) !== 1);
+      }
+    }
+    const format = mask => {
+      const d = (0 << 3) | mask; // M seviyesi = 00
+      let r = d; for (let i = 0; i < 10; i++) r = (r << 1) ^ ((r >>> 9) * 0x537);
+      const b = ((d << 10) | r) ^ 0x5412, g = i => ((b >>> i) & 1) !== 0;
+      for (let i = 0; i <= 5; i++) set(8, i, g(i));
+      set(8, 7, g(6)); set(8, 8, g(7)); set(7, 8, g(8));
+      for (let i = 9; i < 15; i++) set(14 - i, 8, g(i));
+      for (let i = 0; i < 8; i++) set(size - 1 - i, 8, g(i));
+      for (let i = 8; i < 15; i++) set(8, size - 15 + i, g(i));
+      set(8, size - 8, true);
+    };
+    format(0);
+    if (v >= 7) {
+      let r = v; for (let i = 0; i < 12; i++) r = (r << 1) ^ ((r >>> 11) * 0x1F25);
+      const b = (v << 12) | r;
+      for (let i = 0; i < 18; i++) { const bit = ((b >>> i) & 1) !== 0, a = size - 11 + i % 3, c = Math.floor(i / 3); set(a, c, bit); set(c, a, bit); }
+    }
+    let bi = 0;
+    for (let right = size - 1; right >= 1; right -= 2) {
+      if (right === 6) right = 5;
+      for (let vert = 0; vert < size; vert++) for (let j = 0; j < 2; j++) {
+        const x = right - j, up = ((right + 1) & 2) === 0, y = up ? size - 1 - vert : vert;
+        if (!fn[y][x] && bi < cw.length * 8) { m[y][x] = ((cw[bi >>> 3] >>> (7 - (bi & 7))) & 1) !== 0; bi++; }
+      }
+    }
+    const maskFn = [
+      (x, y) => (x + y) % 2 === 0, (x, y) => y % 2 === 0, (x, y) => x % 3 === 0, (x, y) => (x + y) % 3 === 0,
+      (x, y) => (Math.floor(x / 3) + Math.floor(y / 2)) % 2 === 0, (x, y) => x * y % 2 + x * y % 3 === 0,
+      (x, y) => (x * y % 2 + x * y % 3) % 2 === 0, (x, y) => ((x + y) % 2 + x * y % 3) % 2 === 0
+    ];
+    const apply = k => { for (let y = 0; y < size; y++) for (let x = 0; x < size; x++) if (!fn[y][x] && maskFn[k](x, y)) m[y][x] = !m[y][x]; };
+    const penalty = () => {
+      let p = 0, dark = 0;
+      for (let y = 0; y < size; y++) {
+        let runR = 1, runC = 1;
+        for (let x = 0; x < size; x++) {
+          if (m[y][x]) dark++;
+          if (x > 0) {
+            if (m[y][x] === m[y][x - 1]) { runR++; if (runR === 5) p += 3; else if (runR > 5) p++; } else runR = 1;
+            if (m[x][y] === m[x - 1][y]) { runC++; if (runC === 5) p += 3; else if (runC > 5) p++; } else runC = 1;
+          }
+          if (x < size - 1 && y < size - 1) { const c = m[y][x]; if (c === m[y][x + 1] && c === m[y + 1][x] && c === m[y + 1][x + 1]) p += 3; }
+        }
+      }
+      const total = size * size;
+      p += (Math.ceil(Math.abs(dark * 20 - total * 10) / total) - 1) * 10;
+      return p;
+    };
+    let best = 0, min = Infinity;
+    for (let k = 0; k < 8; k++) { apply(k); format(k); const p = penalty(); if (p < min) { min = p; best = k; } apply(k); }
+    apply(best); format(best);
+    return m;
+  }
+  function svg(text, opts) {
+    const o = Object.assign({ fg: '#17223a', bg: '#ffffff', quiet: 4 }, opts || {});
+    const m = encode(text), n = m.length, s = n + o.quiet * 2;
+    let d = '';
+    for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) if (m[y][x]) d += `M${x + o.quiet} ${y + o.quiet}h1v1h-1z`;
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${s} ${s}" shape-rendering="crispEdges" role="img" aria-label="QR kodu"><rect width="${s}" height="${s}" fill="${o.bg}"/><path d="${d}" fill="${o.fg}"/></svg>`;
+  }
+  return { encode, svg };
+})();
+if (typeof module !== 'undefined') module.exports = SC_QR;
+
+const DATA = [{"id":1,"s":[5,7,0],"g":[7,6],"w":[[4,6],[6,7],[7,7]],"p":[],"c":[],"prog":[["A","F"],["A","R"],["A","F"],["A","F"]],"mv":3,"ch":"K1"},{"id":2,"s":[0,4,1],"g":[1,2],"w":[[0,2],[0,3],[1,5],[2,3]],"p":[],"c":[],"prog":[["A","F"],["A","L"],["A","F"],["A","F"]],"mv":3,"ch":"K1"},{"id":3,"s":[4,4,3],"g":[1,5],"w":[[1,3],[2,5]],"p":[],"c":[],"prog":[["A","F"],["A","F"],["A","F"],["A","L"],["A","F"]],"mv":4,"ch":"K1"},{"id":4,"s":[5,3,2],"g":[3,5],"w":[[4,4],[6,5]],"p":[],"c":[],"prog":[["A","F"],["A","F"],["A","R"],["A","F"],["A","F"]],"mv":4,"ch":"K1"},{"id":5,"s":[4,5,3],"g":[2,7],"w":[[2,4],[3,6]],"p":[],"c":[],"prog":[["A","F"],["A","F"],["A","L"],["A","F"],["A","F"]],"mv":4,"ch":"K1"},{"id":6,"s":[5,3,2],"g":[2,4],"w":[[4,3],[6,4]],"p":[],"c":[],"prog":[["A","F"],["A","R"],["A","F"],["A","F"],["A","F"]],"mv":4,"ch":"K1"},{"id":7,"s":[4,4,3],"g":[1,3],"w":[[1,5],[2,3],[2,5]],"p":[],"c":[],"prog":[["A","F"],["A","F"],["A","F"],["A","R"],["A","F"]],"mv":4,"ch":"K1"},{"id":8,"s":[5,5,0],"g":[3,2],"w":[[4,3],[6,2]],"p":[],"c":[],"prog":[["A","F"],["A","F"],["A","F"],["A","L"],["A","F"],["A","F"]],"mv":5,"ch":"K1"},{"id":9,"s":[0,5,2],"g":[4,6],"w":[[1,5],[4,5]],"p":[],"c":[],"prog":[["A","F"],["A","L"],["A","F"],["A","F"],["A","F"],["A","F"]],"mv":5,"ch":"K1"},{"id":10,"s":[2,3,1],"g":[4,6],"w":[[3,4],[4,2]],"p":[],"c":[],"prog":[["A","F"],["A","F"],["A","R"],["A","F"],["A","F"],["A","F"]],"mv":5,"ch":"K1"},{"id":11,"s":[6,3,0],"g":[3,1],"w":[[3,3],[4,1],[5,1],[5,3],[7,2]],"p":[],"c":[],"prog":[["A","F"],["A","L"],["A","F"],["A","F"],["A","F"],["A","R"],["A","F"]],"mv":5,"ch":"K2"},{"id":12,"s":[1,6,0],"g":[4,4],"w":[[0,5],[2,4],[2,6],[3,4],[3,6],[4,6]],"p":[],"c":[],"prog":[["A","F"],["A","R"],["A","F"],["A","F"],["A","F"],["A","L"],["A","F"]],"mv":5,"ch":"K2"},{"id":13,"s":[4,1,3],"g":[1,3],"w":[[1,2],[2,0],[3,0],[3,2],[3,3],[4,2],[4,3]],"p":[],"c":[],"prog":[["A","F"],["A","F"],["A","L"],["A","F"],["A","F"],["A","R"],["A","F"]],"mv":5,"ch":"K2"},{"id":14,"s":[3,1,1],"g":[2,4],"w":[[2,3],[3,2],[3,3],[5,4]],"p":[],"c":[],"prog":[["A","F"],["A","R"],["A","F"],["A","F"],["A","F"],["A","R"],["A","F"],["A","F"]],"mv":6,"ch":"K2"},{"id":15,"s":[3,4,2],"g":[6,1],"w":[[3,1],[3,2],[3,3],[4,5],[5,2],[5,3],[6,3]],"p":[],"c":[],"prog":[["A","L"],["A","F"],["A","L"],["A","F"],["A","F"],["A","F"],["A","R"],["A","F"],["A","F"]],"mv":6,"ch":"K2"},{"id":16,"s":[4,5,0],"g":[1,7],"w":[[2,5],[2,7],[3,5],[4,6]],"p":[],"c":[],"prog":[["A","F"],["A","L"],["A","F"],["A","F"],["A","F"],["A","L"],["A","F"],["A","F"],["A","F"]],"mv":7,"ch":"K2"},{"id":17,"s":[1,6,0],"g":[4,6],"w":[[2,5],[3,5],[3,6],[4,7]],"p":[],"c":[],"prog":[["A","F"],["A","F"],["A","R"],["A","F"],["A","F"],["A","F"],["A","R"],["A","F"],["A","F"]],"mv":7,"ch":"K2"},{"id":18,"s":[1,3,0],"g":[3,4],"w":[[0,1],[1,4],[2,2],[2,3],[3,0],[4,2]],"p":[],"c":[],"prog":[["A","F"],["A","F"],["A","R"],["A","F"],["A","F"],["A","R"],["A","F"],["A","F"],["A","F"]],"mv":7,"ch":"K2"},{"id":19,"s":[3,1,1],"g":[0,3],"w":[[0,1],[1,1],[2,1],[2,2],[3,2],[4,0],[5,3]],"p":[],"c":[],"prog":[["A","F"],["A","R"],["A","F"],["A","F"],["A","R"],["A","F"],["A","F"],["A","F"],["A","F"]],"mv":7,"ch":"K2"},{"id":20,"s":[6,2,0],"g":[5,6],"w":[[3,6],[4,1],[5,3],[6,4]],"p":[],"c":[],"prog":[["A","L"],["A","F"],["A","F"],["A","L"],["A","F"],["A","F"],["A","F"],["A","F"],["A","L"],["A","F"]],"mv":7,"ch":"K2"},{"id":21,"s":[4,4,1],"g":[3,1],"w":[[2,1],[3,2],[4,2],[5,3],[6,5],[7,1]],"p":[],"c":[],"prog":[["A","F"],["A","F"],["A","L"],["A","F"],["A","F"],["A","F"],["A","L"],["A","F"],["A","F"],["A","F"]],"mv":8,"ch":"K2"},{"id":22,"s":[7,1,2],"g":[4,2],"w":[[4,1],[4,5],[5,1],[5,3],[6,1],[6,2]],"p":[],"c":[],"prog":[["A","F"],["A","F"],["A","F"],["A","R"],["A","F"],["A","F"],["A","F"],["A","R"],["A","F"],["A","F"]],"mv":8,"ch":"K2"},{"id":23,"s":[2,5,2],"g":[5,4],"w":[[1,6],[2,4],[3,5]],"p":[[1,5],[3,4],[4,7],[5,5]],"c":[],"prog":[["A","F"],["A","L"],["A","F"],["A","F"],["A","L"],["A","F"],["A","F"],["A","R"],["A","F"]],"mv":6,"ch":"K3"},{"id":24,"s":[6,3,2],"g":[5,1],"w":[[3,3],[6,1],[7,4]],"p":[[3,1],[4,5],[5,2],[5,3],[6,2]],"c":[],"prog":[["A","F"],["A","R"],["A","F"],["A","F"],["A","R"],["A","F"],["A","F"],["A","F"],["A","R"],["A","F"]],"mv":7,"ch":"K3"},{"id":25,"s":[4,5,1],"g":[3,1],"w":[[4,1]],"p":[[2,1],[3,4],[4,2],[4,4],[4,6],[5,6],[6,3],[6,4]],"c":[],"prog":[["A","F"],["A","L"],["A","F"],["A","F"],["A","L"],["A","F"],["A","F"],["A","R"],["A","F"],["A","F"]],"mv":7,"ch":"K3"},{"id":26,"s":[5,3,0],"g":[6,5],"w":[[3,6],[5,4],[5,5],[6,3],[7,4]],"p":[[6,4],[6,7]],"c":[],"prog":[["A","L"],["A","F"],["A","L"],["A","F"],["A","F"],["A","F"],["A","L"],["A","F"],["A","F"],["A","L"],["A","F"]],"mv":7,"ch":"K3"},{"id":27,"s":[4,7,3],"g":[6,5],"w":[[4,5],[5,5],[5,7]],"p":[[2,4],[4,6]],"c":[],"prog":[["A","F"],["A","R"],["A","F"],["A","F"],["A","F"],["A","R"],["A","F"],["A","F"],["A","F"],["A","R"],["A","F"]],"mv":8,"ch":"K3"},{"id":28,"s":[3,2,1],"g":[1,6],"w":[[2,2],[3,3],[3,5],[3,6]],"p":[[4,1]],"c":[],"prog":[["A","F"],["A","R"],["A","F"],["A","F"],["A","R"],["A","F"],["A","F"],["A","F"],["A","L"],["A","F"],["A","F"]],"mv":8,"ch":"K3"},{"id":29,"s":[3,6,3],"g":[3,2],"w":[[4,5]],"p":[[1,2],[2,3],[2,5],[3,5],[4,3]],"c":[],"prog":[["A","F"],["A","F"],["A","R"],["A","F"],["A","F"],["A","R"],["A","F"],["A","F"],["A","L"],["A","F"],["A","F"]],"mv":8,"ch":"K3"},{"id":30,"s":[4,7,1],"g":[4,5],"w":[[3,7],[5,5]],"p":[[4,3],[4,6],[5,6],[7,4]],"c":[],"prog":[["A","F"],["A","F"],["A","L"],["A","F"],["A","F"],["A","F"],["A","L"],["A","F"],["A","F"],["A","L"],["A","F"]],"mv":8,"ch":"K3"},{"id":31,"s":[2,2,2],"g":[6,2],"w":[[3,2],[3,3],[4,2],[4,3]],"p":[[1,4],[2,1],[5,5],[6,3]],"c":[],"prog":[["A","F"],["A","F"],["A","L"],["A","F"],["A","F"],["A","F"],["A","L"],["A","F"],["A","F"],["A","R"],["A","F"]],"mv":8,"ch":"K3"},{"id":32,"s":[4,2,3],"g":[6,3],"w":[[2,3]],"p":[[4,3],[4,4],[5,2],[6,2],[7,2]],"c":[],"prog":[["A","F"],["A","L"],["A","F"],["A","F"],["A","F"],["A","L"],["A","F"],["A","F"],["A","F"],["A","L"],["A","F"],["A","F"]],"mv":9,"ch":"K3"},{"id":33,"s":[3,1,2],"g":[6,1],"w":[[2,4],[4,0],[4,1],[6,3]],"p":[[4,2],[4,3],[6,0]],"c":[],"prog":[["A","F"],["A","F"],["A","F"],["A","L"],["A","F"],["A","F"],["A","L"],["A","F"],["A","F"],["A","F"],["A","R"],["A","F"]],"mv":9,"ch":"K3"},{"id":34,"s":[5,2,1],"g":[3,7],"w":[[3,4],[4,4],[5,4],[5,7],[7,5]],"p":[[4,6],[5,3],[5,6],[6,1]],"c":[],"prog":[["A","F"],["A","R"],["A","F"],["A","F"],["A","F"],["A","R"],["A","F"],["A","F"],["A","F"],["A","L"],["A","F"],["A","F"]],"mv":9,"ch":"K3"},{"id":35,"s":[7,5,0],"g":[4,3],"w":[[3,4],[5,3],[6,3],[6,5]],"p":[[4,5]],"c":[],"prog":[["A","F"],["A","L"],["A","F"],["A","F"],["A","F"],["I","W","R"],["A","F"]],"mv":5,"ch":"O1"},{"id":36,"s":[1,4,0],"g":[3,6],"w":[[0,3],[1,6],[2,4],[4,3]],"p":[[1,5]],"c":[],"prog":[["A","F"],["A","R"],["A","F"],["A","F"],["I","W","R"],["A","F"],["A","F"],["A","F"]],"mv":6,"ch":"O1"},{"id":37,"s":[5,1,2],"g":[2,4],"w":[[2,1],[3,3],[4,1],[5,3]],"p":[[6,2]],"c":[],"prog":[["A","F"],["I","W","R"],["A","F"],["A","F"],["A","F"],["A","L"],["A","F"],["A","F"]],"mv":6,"ch":"O1"},{"id":38,"s":[4,5,0],"g":[1,2],"w":[[1,4],[1,5],[2,2],[2,4],[3,2],[4,2],[5,3]],"p":[[3,4]],"c":[],"prog":[["A","F"],["A","F"],["I","W","L"],["A","F"],["A","F"],["A","F"],["A","R"],["A","F"]],"mv":6,"ch":"O1"},{"id":39,"s":[5,5,0],"g":[2,1],"w":[[2,3],[3,1],[4,3],[5,1],[6,2]],"p":[[6,4]],"c":[],"prog":[["A","F"],["A","F"],["A","F"],["I","W","L"],["A","F"],["A","F"],["A","F"],["A","R"],["A","F"]],"mv":7,"ch":"O1"},{"id":40,"s":[7,7,0],"g":[5,2],"w":[[4,2],[4,6],[5,7],[6,2],[6,3],[6,5],[6,7]],"p":[],"c":[],"prog":[["A","F"],["A","L"],["A","F"],["A","F"],["I","W","R"],["A","F"],["A","F"],["A","F"],["A","F"]],"mv":7,"ch":"O1"},{"id":41,"s":[3,4,1],"g":[3,1],"w":[[2,2],[4,2],[4,3],[5,0],[5,5],[6,1]],"p":[[3,2]],"c":[],"prog":[["A","F"],["A","F"],["A","L"],["A","F"],["A","F"],["A","F"],["I","W","L"],["A","F"],["A","F"]],"mv":7,"ch":"O1"},{"id":42,"s":[1,2,2],"g":[3,7],"w":[[0,4],[0,6],[2,4],[2,5],[2,7],[4,6]],"p":[[3,5]],"c":[],"prog":[["A","F"],["A","F"],["A","F"],["A","F"],["A","L"],["A","F"],["A","F"],["I","W","R"],["A","F"]],"mv":7,"ch":"O1"},{"id":43,"s":[5,5,0],"g":[1,1],"w":[[0,2],[2,1],[4,1],[4,3],[6,2]],"p":[],"c":[],"prog":[["A","F"],["A","F"],["A","F"],["A","L"],["A","F"],["A","F"],["A","F"],["A","F"],["I","W","R"],["A","F"]],"mv":8,"ch":"O1"},{"id":44,"s":[3,2,2],"g":[6,3],"w":[[3,6],[4,4],[5,2],[5,3],[6,1],[6,6]],"p":[],"c":[],"prog":[["A","F"],["A","F"],["A","F"],["I","W","L"],["A","F"],["A","F"],["A","F"],["A","L"],["A","F"],["A","F"]],"mv":8,"ch":"O1"},{"id":45,"s":[7,7,0],"g":[3,7],"w":[[2,6],[3,4],[4,6],[4,7],[6,6],[6,7],[7,4]],"p":[[5,7]],"c":[],"prog":[["A","F"],["A","F"],["I","W","L"],["A","F"],["A","F"],["A","F"],["A","F"],["A","L"],["A","F"],["A","F"]],"mv":8,"ch":"O1"},{"id":46,"s":[0,4,1],"g":[4,2],"w":[[2,3],[3,5],[4,3]],"p":[[1,3],[2,2],[4,4]],"c":[],"prog":[["A","F"],["A","F"],["A","F"],["I","P","L"],["A","F"],["A","F"],["A","R"],["A","F"]],"mv":6,"ch":"O2"},{"id":47,"s":[4,3,2],"g":[6,7],"w":[[3,5],[4,7],[5,3],[5,6],[6,4]],"p":[[5,4],[7,5]],"c":[],"prog":[["A","F"],["A","F"],["A","L"],["A","F"],["A","F"],["I","P","R"],["A","F"],["A","F"]],"mv":6,"ch":"O2"},{"id":48,"s":[1,4,1],"g":[5,6],"w":[[2,6],[4,7],[5,5]],"p":[[2,5],[3,3],[3,7],[4,5]],"c":[],"prog":[["A","F"],["A","F"],["A","R"],["A","F"],["A","F"],["I","P","L"],["A","F"],["A","F"]],"mv":6,"ch":"O2"},{"id":49,"s":[1,5,0],"g":[3,1],"w":[[0,4],[1,1],[1,2],[2,1],[2,5],[3,5]],"p":[[2,3],[4,4]],"c":[],"prog":[["A","F"],["A","R"],["A","F"],["A","F"],["I","P","L"],["A","F"],["A","F"],["A","F"]],"mv":6,"ch":"O2"},{"id":50,"s":[3,4,2],"g":[6,3],"w":[[5,6]],"p":[[2,5],[3,3],[3,6],[4,3],[4,4],[5,4],[6,6]],"c":[],"prog":[["A","F"],["I","P","L"],["A","F"],["A","F"],["A","F"],["A","L"],["A","F"],["A","F"]],"mv":6,"ch":"O2"},{"id":51,"s":[1,5,1],"g":[6,4],"w":[[1,4],[1,6],[4,3],[5,3],[5,5]],"p":[[2,6],[3,5],[6,5]],"c":[],"prog":[["A","F"],["I","P","L"],["A","F"],["A","R"],["A","F"],["A","F"],["A","F"],["A","F"]],"mv":6,"ch":"O2"},{"id":52,"s":[5,1,3],"g":[1,4],"w":[[1,2],[5,2]],"p":[[1,1],[1,3],[2,0],[3,2],[3,4]],"c":[],"prog":[["A","F"],["A","F"],["A","F"],["I","P","L"],["A","F"],["A","F"],["A","F"],["A","R"],["A","F"]],"mv":7,"ch":"O2"},{"id":53,"s":[6,4,3],"g":[3,1],"w":[[4,1]],"p":[[1,1],[1,4],[2,5],[3,2]],"c":[],"prog":[["A","F"],["A","F"],["A","F"],["A","F"],["I","P","R"],["A","F"],["A","F"],["A","F"],["A","R"],["A","F"]],"mv":8,"ch":"O2"},{"id":54,"s":[0,4,1],"g":[6,6],"w":[[2,3]],"p":[[1,5],[1,6],[3,4],[3,5]],"c":[],"prog":[["A","F"],["A","F"],["I","P","R"],["A","F"],["A","F"],["A","L"],["A","F"],["A","F"],["A","F"],["A","F"]],"mv":8,"ch":"O2"},{"id":55,"s":[1,6,0],"g":[3,4],"w":[[0,2],[2,4],[2,6],[3,5]],"p":[[2,3],[3,1],[4,2]],"c":[],"prog":[["A","F"],["A","F"],["A","F"],["A","F"],["A","R"],["A","F"],["A","F"],["I","P","R"],["A","F"],["A","F"]],"mv":8,"ch":"O2"},{"id":56,"s":[3,7,1],"g":[7,3],"w":[[5,3],[7,4]],"p":[[3,6],[5,4],[5,6],[6,2],[7,6]],"c":[],"prog":[["A","F"],["A","F"],["A","F"],["A","L"],["A","F"],["A","F"],["A","F"],["A","F"],["I","P","R"],["A","F"]],"mv":8,"ch":"O2"},{"id":57,"s":[2,4,1],"g":[6,5],"w":[[2,3],[4,2],[4,5],[5,5],[7,4]],"p":[[3,5],[4,4],[5,4],[6,2]],"c":[],"prog":[["A","F"],["I","P","L"],["A","F"],["A","R"],["A","F"],["A","F"],["A","F"],["A","R"],["A","F"],["A","F"]],"mv":7,"ch":"O3"},{"id":58,"s":[3,6,1],"g":[6,6],"w":[[3,4],[3,7],[5,5],[5,7],[7,5]],"p":[[3,5],[4,7],[5,6],[6,3],[7,6]],"c":[],"prog":[["A","F"],["I","P","L"],["A","F"],["A","F"],["A","R"],["A","F"],["A","F"],["A","R"],["A","F"],["A","F"]],"mv":7,"ch":"O3"},{"id":59,"s":[5,6,1],"g":[3,2],"w":[[3,5],[4,2],[4,4],[6,7]],"p":[[2,3],[5,4]],"c":[],"prog":[["A","F"],["A","L"],["A","F"],["A","F"],["A","F"],["A","L"],["A","F"],["A","F"],["A","F"],["I","P","R"],["A","F"]],"mv":8,"ch":"O3"},{"id":60,"s":[5,4,3],"g":[6,3],"w":[[2,2],[2,4],[4,3],[7,4]],"p":[[3,5],[5,3],[6,1],[6,4]],"c":[],"prog":[["A","F"],["A","F"],["I","W","R"],["A","F"],["A","F"],["A","R"],["A","F"],["A","F"],["A","F"],["A","R"],["A","F"]],"mv":8,"ch":"O3"},{"id":61,"s":[0,4,1],"g":[4,4],"w":[[1,6],[2,3],[3,3],[3,4],[3,5],[4,7]],"p":[[1,3],[1,5]],"c":[],"prog":[["A","F"],["A","F"],["I","W","R"],["A","F"],["A","F"],["A","L"],["A","F"],["A","F"],["A","L"],["A","F"],["A","F"]],"mv":8,"ch":"O3"},{"id":62,"s":[4,2,2],"g":[1,1],"w":[[2,0],[2,5],[3,3],[5,4]],"p":[[1,2],[1,3],[3,1],[3,2],[4,1]],"c":[],"prog":[["A","F"],["A","F"],["A","R"],["A","F"],["A","F"],["A","R"],["A","F"],["A","F"],["A","F"],["I","W","L"],["A","F"]],"mv":8,"ch":"O3"},{"id":63,"s":[1,3,1],"g":[2,7],"w":[[0,4],[1,5],[2,5]],"p":[[0,7],[3,5],[4,7]],"c":[],"prog":[["A","F"],["A","F"],["A","F"],["A","R"],["A","F"],["A","F"],["A","F"],["I","P","R"],["A","F"],["A","F"],["A","L"],["A","F"]],"mv":9,"ch":"O3"},{"id":64,"s":[1,3,1],"g":[2,7],"w":[[0,4],[0,6],[1,4],[3,4],[3,7],[4,6]],"p":[[2,4]],"c":[],"prog":[["A","F"],["A","F"],["A","F"],["A","R"],["A","F"],["A","F"],["I","W","R"],["A","F"],["A","F"],["A","L"],["A","F"],["A","F"]],"mv":9,"ch":"O3"},{"id":65,"s":[7,2,3],"g":[2,7],"w":[[2,5],[5,2],[5,5],[5,7],[7,6]],"p":[[3,7]],"c":[],"prog":[["A","F"],["I","W","L"],["A","F"],["A","F"],["A","F"],["A","F"],["A","R"],["A","F"],["A","F"],["A","F"],["A","F"],["A","L"],["A","F"]],"mv":10,"ch":"O3"},{"id":66,"s":[2,2,2],"g":[3,1],"w":[[1,1],[2,6],[3,2],[3,3],[3,4],[6,2]],"p":[[2,1],[3,0]],"c":[],"prog":[["A","F"],["A","F"],["A","F"],["I","W","L"],["A","F"],["A","F"],["A","L"],["A","F"],["A","F"],["A","F"],["A","F"],["A","L"],["A","F"]],"mv":10,"ch":"O3"},{"id":67,"s":[0,6,1],"g":[4,0],"w":[[1,5],[2,2],[3,2]],"p":[[0,5],[1,0],[1,3],[2,7],[3,4],[4,4]],"c":[],"prog":[["A","F"],["A","F"],["A","L"],["A","F"],["A","F"],["A","F"],["I","W","R"],["A","F"],["A","F"],["A","L"],["A","F"],["A","F"],["A","F"]],"mv":10,"ch":"O3"},{"id":68,"s":[4,7,0],"g":[4,2],"w":[[3,5],[3,7],[4,3],[5,6],[6,2],[6,4]],"p":[[3,6],[4,1],[4,4],[5,7],[6,3],[6,5]],"c":[],"prog":[["A","F"],["A","F"],["I","P","R"],["A","F"],["I","P","L"],["A","F"],["A","F"],["A","F"],["A","L"],["A","F"]],"mv":7,"ch":"Z1"},{"id":69,"s":[0,7,0],"g":[2,6],"w":[[2,3],[2,5],[2,7],[3,3],[4,5],[4,6]],"p":[[1,3],[1,5],[1,6],[1,7],[3,7],[4,4]],"c":[],"prog":[["A","F"],["A","F"],["A","F"],["A","R"],["A","F"],["A","F"],["A","F"],["I","P","R"],["A","F"],["A","F"],["I","P","R"],["A","F"]],"mv":9,"ch":"Z1"},{"id":70,"s":[6,7,3],"g":[2,4],"w":[[3,4],[3,5],[5,6],[6,4],[6,6]],"p":[[1,3],[2,2],[2,5],[2,6],[3,6],[3,7],[5,3],[5,5]],"c":[],"prog":[["A","F"],["A","F"],["I","P","R"],["A","F"],["A","F"],["A","F"],["A","F"],["A","L"],["A","F"],["A","F"],["I","P","L"],["A","F"]],"mv":9,"ch":"Z1"},{"id":71,"s":[3,1,1],"g":[6,7],"w":[[3,2],[3,3],[4,0],[5,4],[5,6],[6,4]],"p":[[3,0],[3,5],[3,6],[4,6],[5,1],[5,3],[5,7]],"c":[],"prog":[["A","F"],["I","P","R"],["A","F"],["A","F"],["A","F"],["A","F"],["I","P","L"],["A","F"],["A","F"],["A","R"],["A","F"],["A","F"]],"mv":9,"ch":"Z1"},{"id":72,"s":[2,7,0],"g":[3,1],"w":[[2,4],[3,0],[3,4],[3,7],[5,1],[5,3],[5,5]],"p":[[1,5],[1,6],[2,3],[3,2],[3,6],[4,6]],"c":[],"prog":[["A","F"],["A","F"],["I","W","R"],["A","F"],["A","F"],["I","W","L"],["A","F"],["A","F"],["A","F"],["A","F"],["A","L"],["A","F"]],"mv":9,"ch":"Z1"},{"id":73,"s":[7,3,2],"g":[6,1],"w":[[4,2],[4,4],[4,5],[6,2],[6,3],[6,6],[7,2],[7,6]],"p":[[4,1],[4,3],[5,6],[6,0],[6,4],[7,1]],"c":[],"prog":[["A","F"],["A","F"],["I","W","R"],["A","F"],["A","F"],["I","W","R"],["A","F"],["A","F"],["A","F"],["A","F"],["A","R"],["A","F"]],"mv":9,"ch":"Z1"},{"id":74,"s":[7,0,3],"g":[3,5],"w":[[2,3],[2,4],[2,5],[4,0],[4,3],[4,5],[5,1],[6,5],[7,1],[7,4]],"p":[[3,1],[4,1],[5,0],[5,3],[6,3],[7,2]],"c":[],"prog":[["A","F"],["I","P","L"],["A","F"],["A","F"],["I","P","R"],["A","F"],["A","F"],["A","F"],["A","L"],["A","F"],["A","F"],["A","F"]],"mv":9,"ch":"Z1"},{"id":75,"s":[0,3,1],"g":[5,2],"w":[[0,4],[0,5],[2,2],[2,4],[3,4],[4,4]],"p":[[1,1],[1,2],[1,6],[2,3],[5,1],[5,6]],"c":[],"prog":[["A","F"],["I","P","R"],["A","F"],["A","F"],["I","P","L"],["A","F"],["A","F"],["A","F"],["A","F"],["A","L"],["A","F"],["A","F"],["A","F"]],"mv":10,"ch":"Z1"},{"id":76,"s":[2,1,2],"g":[4,1],"w":[[2,4],[3,0],[3,1],[3,4],[4,0],[4,4],[5,2],[5,4],[6,0],[7,2]],"p":[[1,1],[1,3],[3,2],[4,2],[6,4],[7,1]],"c":[],"prog":[["A","F"],["A","F"],["I","W","L"],["A","F"],["A","F"],["A","F"],["A","F"],["A","L"],["A","F"],["A","F"],["I","W","L"],["A","F"],["A","F"]],"mv":10,"ch":"Z1"},{"id":77,"s":[0,5,1],"g":[6,1],"w":[[0,1],[0,3],[1,4],[2,6],[3,6],[4,2],[5,1],[6,4],[7,3]],"p":[[2,1],[3,2],[3,3],[3,4],[4,6],[5,2],[5,4]],"c":[],"prog":[["A","F"],["A","F"],["A","F"],["A","F"],["A","L"],["A","F"],["A","F"],["I","W","R"],["A","F"],["A","F"],["I","W","L"],["A","F"],["A","F"]],"mv":10,"ch":"Z1"},{"id":78,"s":[2,1,1],"g":[6,7],"w":[[2,3],[2,5],[2,7],[3,6],[4,1],[4,6],[5,6],[5,7],[6,3]],"p":[[2,2],[2,6],[3,0],[3,7],[4,3],[4,4],[6,4]],"c":[],"prog":[["A","F"],["I","W","R"],["A","F"],["A","F"],["A","F"],["A","F"],["I","W","L"],["A","F"],["A","F"],["A","F"],["A","R"],["A","F"],["A","F"]],"mv":10,"ch":"Z1"},{"id":79,"s":[6,6,0],"g":[2,6],"w":[[1,4],[2,3],[3,3],[3,6],[4,3],[5,3],[5,5],[5,6],[5,7]],"p":[[2,7],[3,5],[4,5],[4,6],[6,3],[7,4]],"c":[],"prog":[["A","F"],["A","F"],["I","P","L"],["A","F"],["A","F"],["A","F"],["A","F"],["I","W","L"],["A","F"],["A","F"]],"mv":8,"ch":"Z2"},{"id":80,"s":[0,5,1],"g":[5,1],"w":[[0,6],[2,2],[2,3],[2,6],[4,5],[5,2],[5,3]],"p":[[2,1],[2,4],[3,0],[3,6],[4,2]],"c":[],"prog":[["A","F"],["A","F"],["A","F"],["I","W","L"],["A","F"],["A","F"],["A","F"],["A","F"],["I","P","R"],["A","F"],["A","F"]],"mv":9,"ch":"Z2"},{"id":81,"s":[6,6,0],"g":[3,6],"w":[[4,2],[4,5],[4,6],[4,7],[5,4],[6,2]],"p":[[2,3],[2,4],[3,2],[4,4],[7,3],[7,5]],"c":[],"prog":[["A","F"],["A","F"],["A","F"],["I","W","L"],["A","F"],["A","F"],["A","F"],["I","P","L"],["A","F"],["A","F"],["A","F"]],"mv":9,"ch":"Z2"},{"id":82,"s":[6,5,3],"g":[1,1],"w":[[3,2],[3,3],[3,5],[4,6],[5,1],[5,3],[6,1],[6,2],[6,4],[6,6]],"p":[[1,2],[2,0],[2,5],[4,0],[5,4],[6,3]],"c":[],"prog":[["A","F"],["A","F"],["I","W","R"],["A","F"],["A","F"],["A","F"],["A","F"],["I","P","L"],["A","F"],["A","F"],["A","F"]],"mv":9,"ch":"Z2"},{"id":83,"s":[1,1,1],"g":[3,2],"w":[[0,3],[0,5],[1,6],[2,2],[2,4],[3,0]],"p":[[0,4],[2,3],[3,1],[3,6],[4,4],[4,5]],"c":[],"prog":[["A","R"],["A","F"],["A","F"],["A","F"],["A","F"],["I","W","L"],["A","F"],["A","F"],["I","P","L"],["A","F"],["A","F"],["A","F"]],"mv":9,"ch":"Z2"},{"id":84,"s":[6,3,3],"g":[3,5],"w":[[2,1],[3,0],[4,3],[4,4],[5,2],[5,6]],"p":[[4,2],[4,5],[6,0],[6,4],[7,1],[7,2]],"c":[],"prog":[["A","R"],["A","F"],["A","F"],["I","P","L"],["A","F"],["A","F"],["A","F"],["I","W","L"],["A","F"],["A","F"],["A","F"],["A","F"]],"mv":9,"ch":"Z2"},{"id":85,"s":[3,5,3],"g":[6,5],"w":[[2,2],[2,4],[3,1],[4,1],[4,4],[4,5],[5,1],[5,3],[5,4],[6,6]],"p":[[4,3],[5,5],[6,1],[7,2],[7,3]],"c":[],"prog":[["A","R"],["A","F"],["A","F"],["A","F"],["I","W","R"],["A","F"],["A","F"],["A","F"],["I","P","R"],["A","F"],["A","F"],["A","F"]],"mv":9,"ch":"Z2"},{"id":86,"s":[5,7,0],"g":[7,4],"w":[[2,5],[2,6],[3,3],[4,3],[5,5],[6,3],[6,5],[7,5],[7,6]],"p":[[2,4],[2,7],[4,5],[4,6],[5,3],[6,7]],"c":[],"prog":[["A","L"],["A","F"],["A","F"],["I","P","R"],["A","F"],["A","F"],["A","F"],["I","W","R"],["A","F"],["A","F"],["A","F"],["A","F"]],"mv":9,"ch":"Z2"},{"id":87,"s":[0,0,2],"g":[2,0],"w":[[1,1],[1,2],[1,3],[2,5],[3,3],[3,4]],"p":[[0,5],[1,0],[1,5],[3,0],[3,1],[3,2]],"c":[],"prog":[["A","F"],["A","F"],["A","F"],["A","F"],["I","P","L"],["A","F"],["A","F"],["I","W","L"],["A","F"],["A","F"],["A","F"],["A","F"]],"mv":10,"ch":"Z2"},{"id":88,"s":[1,2,3],"g":[4,3],"w":[[0,3],[0,6],[3,3],[4,2],[4,7],[5,4],[5,6]],"p":[[1,7],[2,3],[2,4],[2,5],[3,5],[5,3]],"c":[],"prog":[["A","L"],["A","F"],["A","F"],["A","F"],["A","F"],["I","P","L"],["A","F"],["A","F"],["A","F"],["I","W","L"],["A","F"],["A","F"],["A","F"]],"mv":10,"ch":"Z2"},{"id":89,"s":[7,5,3],"g":[4,5],"w":[[4,0],[5,2],[5,3],[6,2],[6,3],[7,0]],"p":[[3,1],[5,0],[5,4],[5,5],[6,4],[6,6],[6,7]],"c":[],"prog":[["A","R"],["A","F"],["A","F"],["A","F"],["A","F"],["I","W","L"],["A","F"],["A","F"],["A","F"],["I","P","L"],["A","F"],["A","F"],["A","F"],["A","F"]],"mv":11,"ch":"Z2"},{"id":90,"s":[4,1,3],"g":[0,3],"w":[[0,1],[0,4],[1,5],[2,3],[2,5],[3,0],[4,0]],"p":[[0,2],[1,1],[1,2],[2,2],[4,2],[4,3],[4,4]],"c":[],"prog":[["A","F"],["A","L"],["A","F"],["A","F"],["A","F"],["A","R"],["A","F"],["A","F"],["I","W","R"],["A","F"],["I","P","L"],["A","F"]],"mv":8,"ch":"Z3"},{"id":91,"s":[1,0,1],"g":[3,4],"w":[[1,3],[1,4],[3,0],[3,3],[4,0],[5,3]],"p":[[1,1],[1,2],[2,2],[2,4],[3,2],[3,5],[5,2],[5,4]],"c":[],"prog":[["A","F"],["I","W","R"],["A","F"],["I","P","L"],["A","F"],["A","F"],["A","R"],["A","F"],["A","F"],["A","F"],["A","R"],["A","F"]],"mv":8,"ch":"Z3"},{"id":92,"s":[7,6,0],"g":[2,3],"w":[[1,4],[3,3],[3,6],[4,6],[5,6],[6,4],[7,3]],"p":[[1,3],[2,5],[2,6],[3,5],[5,3],[5,4],[6,3],[6,6]],"c":[],"prog":[["A","F"],["A","L"],["A","F"],["A","F"],["A","F"],["I","P","R"],["A","F"],["A","L"],["A","F"],["A","F"],["I","W","R"],["A","F"]],"mv":8,"ch":"Z3"},{"id":93,"s":[0,7,1],"g":[4,2],"w":[[0,2],[1,2],[1,6],[2,3],[2,4],[3,6],[4,4]],"p":[[0,4],[0,6],[1,5],[2,2],[3,7],[4,3],[4,7]],"c":[],"prog":[["A","F"],["A","F"],["I","P","L"],["A","F"],["A","F"],["I","W","R"],["A","F"],["A","L"],["A","F"],["A","F"],["A","F"],["A","R"],["A","F"]],"mv":9,"ch":"Z3"},{"id":94,"s":[7,2,3],"g":[0,2],"w":[[1,1],[1,3],[2,1],[2,3],[3,4],[6,1]],"p":[[0,1],[0,3],[4,2],[4,4],[5,1],[6,3],[7,1],[7,3]],"c":[],"prog":[["A","F"],["A","F"],["I","P","L"],["A","F"],["A","R"],["A","F"],["A","F"],["I","W","R"],["A","F"],["A","L"],["A","F"],["A","F"],["A","F"]],"mv":9,"ch":"Z3"},{"id":95,"s":[1,4,0],"g":[2,0],"w":[[0,0],[0,4],[1,1],[1,2],[2,2],[2,4],[3,0]],"p":[[0,3],[1,0],[3,2],[3,4],[4,4],[5,1],[5,2]],"c":[],"prog":[["A","F"],["I","W","R"],["A","F"],["A","F"],["A","F"],["A","L"],["A","F"],["A","F"],["A","L"],["A","F"],["A","F"],["I","W","R"],["A","F"]],"mv":9,"ch":"Z3"},{"id":96,"s":[4,1,2],"g":[5,5],"w":[[2,5],[2,6],[3,2],[4,7],[5,1],[5,2],[5,3],[5,4],[7,5]],"p":[[3,1],[3,3],[3,7],[4,5],[5,7],[6,2],[6,4]],"c":[],"prog":[["A","F"],["A","F"],["A","F"],["I","P","R"],["A","F"],["A","L"],["A","F"],["A","F"],["I","P","L"],["A","F"],["A","F"],["A","L"],["A","F"]],"mv":9,"ch":"Z3"},{"id":97,"s":[4,0,1],"g":[2,7],"w":[[1,6],[2,2],[2,4],[3,2],[3,6],[4,4],[4,7],[5,1],[5,2]],"p":[[1,7],[2,0],[3,0],[3,1],[3,7],[4,5],[5,3]],"c":[],"prog":[["A","R"],["A","F"],["A","F"],["A","F"],["I","W","R"],["A","F"],["A","L"],["A","F"],["A","F"],["I","W","R"],["A","F"],["A","L"],["A","F"],["A","F"]],"mv":9,"ch":"Z3"},{"id":98,"s":[2,1,2],"g":[6,7],"w":[[2,4],[3,2],[3,5],[3,7],[4,2],[6,1],[6,2]],"p":[[1,3],[2,7],[3,4],[4,1],[4,6],[5,4],[5,6],[6,4]],"c":[],"prog":[["A","F"],["A","F"],["I","W","L"],["A","F"],["A","F"],["A","R"],["A","F"],["A","F"],["I","P","L"],["A","F"],["A","F"],["A","R"],["A","F"],["A","F"]],"mv":10,"ch":"Z3"},{"id":99,"s":[6,7,0],"g":[1,2],"w":[[2,2],[2,4],[3,4],[3,7],[4,6],[5,4],[7,5]],"p":[[1,4],[1,6],[3,5],[3,6],[4,7],[5,3],[5,6],[5,7],[6,4]],"c":[],"prog":[["A","F"],["A","F"],["I","P","L"],["A","F"],["A","F"],["I","P","R"],["A","F"],["A","F"],["A","L"],["A","F"],["A","F"],["A","F"],["A","R"],["A","F"]],"mv":10,"ch":"Z3"},{"id":100,"s":[0,2,1],"g":[6,6],"w":[[0,6],[1,6],[2,6],[3,3],[4,2],[5,2],[5,5],[6,4]],"p":[[0,1],[0,3],[1,3],[1,4],[2,1],[2,5],[4,4],[4,5],[6,2],[6,3]],"c":[],"prog":[["A","F"],["A","F"],["A","R"],["A","F"],["A","F"],["I","P","L"],["A","F"],["I","P","R"],["A","F"],["A","F"],["A","L"],["A","F"],["A","F"],["A","F"]],"mv":10,"ch":"Z3"}];
+const SITE = true;
+const CHAPTERS = [{"code": "K1", "level": 0, "name": "İlk adımlar", "goal": "İLERLE ile düz gitmek ve bir kez dönmek.", "from": 1, "to": 10}, {"code": "K2", "level": 0, "name": "Köşeler", "goal": "İki köşe dönmek; sağ ile solu karıştırmamak.", "from": 11, "to": 22}, {"code": "K3", "level": 0, "name": "Çukurlara dikkat", "goal": "Çukurlara basmadan üç köşeli bir yol izlemek.", "from": 23, "to": 34}, {"code": "O1", "level": 1, "name": "Duvar sensörü", "goal": "EĞER ile duvarın önünde dönmek.", "from": 35, "to": 45}, {"code": "O2", "level": 1, "name": "Çukur sensörü", "goal": "EĞER ile çukurun önünde dönmek.", "from": 46, "to": 56}, {"code": "O3", "level": 1, "name": "Uzun yol", "goal": "Uzun bir yolda EĞER'i doğru köşeye koymak.", "from": 57, "to": 67}, {"code": "Z1", "level": 2, "name": "Çift sensör", "goal": "Aynı türden iki EĞER'i iki ayrı engelde kullanmak.", "from": 68, "to": 78}, {"code": "Z2", "level": 2, "name": "Duvar ve çukur", "goal": "Bir duvar ve bir çukur sensörünü birlikte kullanmak.", "from": 79, "to": 89}, {"code": "Z3", "level": 2, "name": "Labirent", "goal": "İki EĞER ve birçok engelle uzun bir yolu planlamak.", "from": 90, "to": 100}];
+</script>
+<script>
+(function () {
+  try { document.documentElement.lang = 'tr'; } catch (e) {}
+  const app = document.getElementById('app');
+  const LV = [
+    { key: 'k', name: 'KOLAY', from: 1, to: 34, note: 'EĞER yok. Düz gitmeyi, köşe dönmeyi ve çukurlardan kaçmayı öğretir.' },
+    { key: 'o', name: 'ORTA', from: 35, to: 67, note: 'Her bulmacada 1 EĞER: piyon bir engelin önüne gelince EĞER onu döndürür.' },
+    { key: 'z', name: 'ZOR', from: 68, to: 100, note: 'Her bulmacada 2 EĞER, daha uzun yollar ve daha çok engel.' }
+  ];
+  const COLS = 'ABCDEFGH';
+  const DIRS = [
+    { ar: '↑', tr: 'yukarı bakıyor' }, { ar: '→', tr: 'sağa bakıyor' },
+    { ar: '↓', tr: 'aşağı bakıyor' }, { ar: '←', tr: 'sola bakıyor' }
+  ];
+  const ACT = {
+    F: { name: '1 ADIM İLERLE', short: 'İLERLE', ic: '↑' },
+    R: { name: 'SAĞA DÖN', short: 'SAĞA DÖN', ic: '↻' },
+    L: { name: 'SOLA DÖN', short: 'SOLA DÖN', ic: '↺' },
+    B: { name: '1 ADIM GERİ', short: 'GERİ', ic: '↓' }
+  };
+  const COND = { W: 'Önünde DUVAR var mı?', P: 'Önünde ÇUKUR var mı?' };
+  const COND_SHORT = { W: 'EĞER DUVAR?', P: 'EĞER ÇUKUR?' };
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const co = c => COLS[c[0]] + (c[1] + 1);
+  const sortCells = arr => arr.slice().sort((a, b) => a[1] - b[1] || a[0] - b[0]);
+
+  /* ---------- ilerleme (yalnizca bu tarayicida) ---------- */
+  const SKEY = 'smartcode.v4.stars', TKEY = 'smartcode.v4.tab';
+  let stars = {};
+  try { stars = JSON.parse(localStorage.getItem(SKEY) || '{}') || {}; } catch (e) { stars = {}; }
+  function saveStars() { try { localStorage.setItem(SKEY, JSON.stringify(stars)); } catch (e) {} }
+  let tab = 0;
+  try { tab = Math.min(2, Math.max(0, parseInt(localStorage.getItem(TKEY) || '0', 10) || 0)); } catch (e) {}
+
+  function levelOf(id) { return id <= 34 ? 0 : id <= 67 ? 1 : 2; }
+  function inventory(P) {
+    const inv = { F: 0, B: 0, R: 0, L: 0, W: 0, P: 0 };
+    P.prog.forEach(l => {
+      if (l[0] === 'A') inv[l[1]]++;
+      else { inv[l[1]]++; inv[l[2]]++; }
+    });
+    return inv;
+  }
+
+  /* ---------- tile html ---------- */
+  function actTile(a) { const t = ACT[a]; return `<span class="tile act"><span class="ic" aria-hidden="true">${t.ic}</span>${t.short}</span>`; }
+  function ifTile(c) { return `<span class="tile if"><span class="dia" aria-hidden="true"></span>${COND_SHORT[c]}</span>`; }
+
+  /* ---------- tahta cizimi ---------- */
+  const CS = 44, OX = 22, OY = 22, SIZE = OX + CS * 8 + 6;
+  const cx = x => OX + x * CS + CS / 2, cy = y => OY + y * CS + CS / 2;
+  function wallSVG(x, y) {
+    const X = OX + x * CS + 3, Y = OY + y * CS + 3, W = CS - 6;
+    return `<g><rect x="${X}" y="${Y}" width="${W}" height="${W}" rx="5" fill="var(--wall)"/>` +
+      `<path d="M${X} ${Y + W / 3}h${W}M${X} ${Y + 2 * W / 3}h${W}M${X + W / 2} ${Y}v${W / 3}M${X + W / 4} ${Y + W / 3}v${W / 3}M${X + 3 * W / 4} ${Y + W / 3}v${W / 3}M${X + W / 2} ${Y + 2 * W / 3}v${W / 3}" stroke="var(--wall-line)" stroke-width="1.4" fill="none"/></g>`;
+  }
+  function pitSVG(x, y) {
+    return `<g><circle cx="${cx(x)}" cy="${cy(y)}" r="16" fill="var(--pit)" stroke="var(--pit-rim)" stroke-width="3"/>` +
+      `<ellipse cx="${cx(x)}" cy="${cy(y) + 4}" rx="9" ry="5" fill="var(--pit-rim)" opacity=".35"/></g>`;
+  }
+  function crySVG(x, y, i) {
+    const X = cx(x), Y = cy(y);
+    return `<g class="cry" id="cry${i}"><polygon points="${X},${Y - 14} ${X + 11},${Y - 3} ${X},${Y + 14} ${X - 11},${Y - 3}" fill="var(--cry)"/>` +
+      `<polygon points="${X},${Y - 14} ${X + 11},${Y - 3} ${X},${Y - 3} ${X - 11},${Y - 3}" fill="var(--surface)" opacity=".35"/></g>`;
+  }
+  function goalSVG(x, y) {
+    const X = OX + x * CS, Y = OY + y * CS;
+    return `<g><rect x="${X + 3}" y="${Y + 3}" width="${CS - 6}" height="${CS - 6}" rx="6" fill="var(--stop-bg)" stroke="var(--stop)" stroke-width="2"/>` +
+      `<path d="M${X + 15} ${Y + 34}V${Y + 10}" stroke="var(--stop)" stroke-width="2.5" stroke-linecap="round"/>` +
+      `<path d="M${X + 16} ${Y + 10}L${X + 32} ${Y + 15.5}L${X + 16} ${Y + 21}Z" fill="var(--stop)"/></g>`;
+  }
+  function startSVG(x, y, d) {
+    const X = OX + x * CS, Y = OY + y * CS;
+    return `<g><rect x="${X + 3}" y="${Y + 3}" width="${CS - 6}" height="${CS - 6}" rx="6" fill="var(--go-bg)" stroke="var(--go)" stroke-width="2" stroke-dasharray="4 3"/>` +
+      `<g transform="translate(${cx(x)} ${cy(y)}) rotate(${d * 90})"><path d="M0 -17 L5 -11 L-5 -11 Z" fill="var(--go)"/></g></g>`;
+  }
+  function boardSVG(P) {
+    let s = `<svg viewBox="0 0 ${SIZE} ${SIZE}" role="img" aria-label="8 x 8 oyun tahtası kurulumu" xmlns="http://www.w3.org/2000/svg">`;
+    for (let i = 0; i < 8; i++) {
+      s += `<text x="${cx(i)}" y="14" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="12" font-weight="600" fill="var(--muted)">${COLS[i]}</text>`;
+      s += `<text x="10" y="${cy(i) + 4}" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="12" font-weight="600" fill="var(--muted)">${i + 1}</text>`;
+    }
+    for (let y = 0; y < 8; y++) for (let x = 0; x < 8; x++) {
+      s += `<rect x="${OX + x * CS}" y="${OY + y * CS}" width="${CS}" height="${CS}" fill="${(x + y) % 2 ? 'var(--cell-alt)' : 'var(--cell)'}" stroke="var(--grid)" stroke-width="1"/>`;
+    }
+    s += `<rect x="${OX}" y="${OY}" width="${CS * 8}" height="${CS * 8}" fill="none" stroke="var(--brand)" stroke-width="2.5" rx="2"/>`;
+    s += startSVG(P.s[0], P.s[1], P.s[2]);
+    s += goalSVG(P.g[0], P.g[1]);
+    P.w.forEach(c => s += wallSVG(c[0], c[1]));
+    P.p.forEach(c => s += pitSVG(c[0], c[1]));
+    P.c.forEach((c, i) => s += crySVG(c[0], c[1], i));
+    s += `<polyline id="trail" points="" fill="none" stroke="var(--trail)" stroke-width="3" stroke-dasharray="2 6" stroke-linecap="round" stroke-linejoin="round" opacity=".75"/>`;
+    s += `<g class="robot" id="robot"><circle r="15" fill="var(--robot)"/><path d="M0 -10 L8 5 L0 1 L-8 5 Z" fill="var(--robot-ink)"/></g>`;
+    s += `</svg>`;
+    return s;
+  }
+  function legendIcon(kind) {
+    const v = 'viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"';
+    if (kind === 'wall') return `<svg ${v}><rect x="2" y="2" width="20" height="20" rx="4" fill="var(--wall)"/><path d="M2 9h20M2 15h20M12 2v7M7 9v6M17 9v6M12 15v7" stroke="var(--wall-line)" stroke-width="1.2" fill="none"/></svg>`;
+    if (kind === 'pit') return `<svg ${v}><circle cx="12" cy="12" r="9" fill="var(--pit)" stroke="var(--pit-rim)" stroke-width="2.5"/></svg>`;
+    if (kind === 'cry') return `<svg ${v}><polygon points="12,2 20,10 12,22 4,10" fill="var(--cry)"/></svg>`;
+    if (kind === 'goal') return `<svg ${v}><rect x="2" y="2" width="20" height="20" rx="4" fill="var(--stop-bg)" stroke="var(--stop)" stroke-width="1.6"/><path d="M8 19V5" stroke="var(--stop)" stroke-width="2" stroke-linecap="round"/><path d="M9 5l9 3.5L9 12Z" fill="var(--stop)"/></svg>`;
+    if (kind === 'start') return `<svg ${v}><rect x="2" y="2" width="20" height="20" rx="4" fill="var(--go-bg)" stroke="var(--go)" stroke-width="1.6" stroke-dasharray="3 2"/><circle cx="12" cy="12" r="6" fill="var(--robot)"/></svg>`;
+    return '';
+  }
+
+  /* ---------- ana sayfa ---------- */
+  function solvedCount() { return Object.keys(stars).filter(k => stars[k] > 0).length; }
+  function topBar() {
+    const n = solvedCount();
+    return `<header class="top"><div class="wrap">
+      <div class="mark" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+      <div class="brand"><b>SMART CODE</b><span>Veli rehberi · 8×8 kodlama oyunu</span></div>
+      <div class="spacer"></div>
+      <div class="progress" aria-label="${n} bulmaca çözüldü"><div class="bar"><i style="width:${n}%"></i></div><span class="mono">${n}/100</span></div>
+    </div></header>`;
+  }
+  /* ---------- telefona yukleme (yalnizca web sitesi surumunde) ---------- */
+  let deferredPrompt = null;
+  const isStandalone = () => (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || window.navigator.standalone === true;
+  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  function installHTML() {
+    if (!SITE || isStandalone()) return '<span id="install" hidden></span>';
+    let body, btn = '';
+    if (deferredPrompt) {
+      body = 'Ana ekranınıza SMART CODE simgesi gelir. Uygulama gibi tam ekran açılır, internet olmadan da çalışır.';
+      btn = '<button class="btn primary" id="install-btn">Telefona yükle</button>';
+    } else if (isIOS) {
+      body = "Safari'de alttaki <b>Paylaş</b> düğmesine dokunun, sonra <b>Ana Ekrana Ekle</b>'yi seçin. Simge ana ekranınıza gelir.";
+    } else {
+      body = "Tarayıcının <b>⋮</b> menüsünden <b>Uygulamayı yükle</b> ya da <b>Ana ekrana ekle</b>'yi seçin. Simge ana ekranınıza gelir.";
+    }
+    return `<section class="install" id="install"><div><b>Telefona uygulama olarak ekleyin</b><p>${body}</p></div>${btn}</section>`;
+  }
+  function bindInstall() {
+    const b = document.getElementById('install-btn');
+    if (b) b.onclick = async () => {
+      if (!deferredPrompt) return;
+      deferredPrompt.prompt();
+      try { await deferredPrompt.userChoice; } catch (e) {}
+      deferredPrompt = null;
+      refreshInstall();
+    };
+  }
+  function refreshInstall() {
+    const el = document.getElementById('install');
+    if (!el) return;
+    el.outerHTML = installHTML();
+    bindInstall();
+  }
+  if (SITE) {
+    window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); deferredPrompt = e; refreshInstall(); });
+    window.addEventListener('appinstalled', () => { deferredPrompt = null; refreshInstall(); });
+    if ('serviceWorker' in navigator) window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js').catch(() => {}); });
+  }
+
+  function renderHome(scrollRules) {
+    const L = LV[tab];
+    const tile = id => {
+      const s = stars[id] || 0;
+      return `<button class="lvl${s ? ' done' : ''}" data-id="${id}" aria-label="Bulmaca ${id}${s ? ', ' + s + ' yıldız' : ''}">
+        <span class="num">${id}</span>
+        <span class="st" aria-hidden="true">${[1, 2, 3].map(i => `<span class="${i <= s ? 'on' : ''}">★</span>`).join('')}</span></button>`;
+    };
+    const chs = CHAPTERS.filter(c => c.level === tab);
+    let tiles = '<div class="chaps">';
+    chs.forEach((c, i) => {
+      let g = '', done = 0;
+      for (let id = c.from; id <= c.to; id++) { g += tile(id); if (stars[id]) done++; }
+      const n = c.to - c.from + 1;
+      tiles += `<section class="chap" aria-label="Bölüm ${i + 1}: ${esc(c.name)}">
+        <div class="chap-h"><span class="chap-no" aria-hidden="true">${i + 1}</span>
+          <div><b>${esc(c.name)}</b><span class="g">${esc(c.goal)}</span></div>
+          <span class="chap-r${done === n ? ' done' : ''}">${done}/${n}</span></div>
+        <div class="grid">${g}</div></section>`;
+    });
+    tiles += '</div>';
+    app.innerHTML = topBar() + `<main class="wrap home">
+      ${installHTML()}
+      <p class="lead"><strong>Bir bulmaca seçin.</strong> Ekrandaki gibi tahtayı kurun, çocuğa yalnızca listedeki parçaları verin. Çocuk programını akış panosuna dizip piyonu yürütsün; çözüm sizin telefonunuzda kalsın.</p>
+      <div class="tabs" role="tablist" aria-label="Zorluk">
+        ${LV.map((l, i) => `<button class="tab ${l.key}" role="tab" aria-selected="${i === tab}" data-tab="${i}"><b>${l.name}</b><span class="mono">${l.from}–${l.to}</span></button>`).join('')}
+      </div>
+      <p class="tabnote">${L.note}</p>
+      ${tiles}
+      ${rulesHTML()}
+      ${SITE ? '<div class="footlinks"><a class="btn" href="#qr">Tahta için QR etiketi</a></div>' : ''}
+    </main>`;
+    app.querySelectorAll('.tab').forEach(b => b.onclick = () => { tab = +b.dataset.tab; try { localStorage.setItem(TKEY, tab); } catch (e) {} renderHome(); });
+    app.querySelectorAll('.lvl').forEach(b => b.onclick = () => { location.hash = 'b' + b.dataset.id; });
+    bindInstall();
+    if (scrollRules) { const r = document.getElementById('kurallar'); if (r) r.scrollIntoView(); } else window.scrollTo(0, 0);
+  }
+  function rulesHTML() {
+    return `<section class="rules" id="kurallar">
+      <h2>Nasıl oynanır?</h2>
+      <ol>
+        <li><b>Tahtayı kurun.</b> Bulmacadaki duvar, çukur, BAŞLA ve HEDEF parçalarını gösterilen karelere koyun. Piyonu BAŞLA karesine, okun yönüne bakacak şekilde yerleştirin.</li>
+        <li><b>Parçaları verin.</b> Çocuğa yalnızca listedeki komut parçalarını verin. Başka parça yok.</li>
+        <li><b>Program önce kurulur.</b> Çocuk parçaları akış panosuna yukarıdan aşağı dizer. Program bitmeden piyona dokunulmaz.</li>
+        <li><b>Çalıştırın.</b> Satırları yukarıdan aşağı, sırayla bir kez uygulayın. EĞER satırında piyonun önündeki kareye bakın.</li>
+        <li><b>Hata ayıklama.</b> Piyon duvara çarparsa, tahtadan çıkarsa ya da çukura düşerse BAŞLA'ya döner; çocuk programını düzeltip yeniden dener.</li>
+      </ol>
+      <div class="cols">
+        <div><h3>Kurallar</h3>
+          <ol>
+            <li>Verilen parçaların <b>hepsi</b> kullanılır.</li>
+            <li>EĞER'in <b>EVET</b> tarafına tek bir parça konur. Cevap EVET ise o parça çalışır; HAYIR ise hiçbir şey yapılmaz, sonraki satıra geçilir.</li>
+            <li>Piyon hedefe vardığında her parça çalışmış olmalı. EĞER'in içindeki parça çalışmadıysa (EĞER yanlış yere konduysa) çözüm geçersizdir.</li>
+            <li>Piyon hedefe vardığı an oyun biter.</li>
+            <li><b>İpucu:</b> Doğru yol her zaman tahtadaki en kısa yoldur: en az kare, eşitse en az dönüş.</li>
+            <li><b>İpucu:</b> Önünde duvar ya da çukur varken dönülecekse EĞER kartı kullanılır; normal SAĞA DÖN / SOLA DÖN kartları yalnızca piyonun önü açıkken kullanılır.</li>
+          </ol>
+        </div>
+        <div><h3>Parçalar</h3>
+          <div class="legend">
+            <div>${actTile('F')}<span>Baktığı yöne 1 kare gider.</span></div>
+            <div>${actTile('R')}<span>Olduğu yerde 90° sağa döner, kare değiştirmez.</span></div>
+            <div>${actTile('L')}<span>Olduğu yerde 90° sola döner, kare değiştirmez.</span></div>
+            <div>${ifTile('W')}<span>Önündeki kare duvar mı? Tahtanın kenarı da duvar sayılır.</span></div>
+            <div>${ifTile('P')}<span>Önündeki kare çukur mu?</span></div>
+          </div>
+        </div>
+        <div><h3>Tahta parçaları</h3>
+          <div class="legend">
+            <div>${legendIcon('start')}<span><b>BAŞLA</b>: piyonun ilk karesi, ok baktığı yönü gösterir.</span></div>
+            <div>${legendIcon('goal')}<span><b>HEDEF</b>: piyonun varması gereken kare.</span></div>
+            <div>${legendIcon('wall')}<span><b>Duvar</b>: geçilmez. Tahtanın kenarı da duvar gibidir.</span></div>
+            <div>${legendIcon('pit')}<span><b>Çukur</b>: üstüne basan piyon düşer.</span></div>
+          </div>
+        </div>
+      </div>
+    </section>`;
+  }
+
+  /* ---------- bulmaca sayfasi ---------- */
+  let cur = null; // {P, run, k, mode, timer, angles}
+  function renderPuzzle(id) {
+    const P = DATA[id - 1];
+    const lv = LV[levelOf(id)];
+    const inv = inventory(P);
+    const run = scRun(P);
+    // acilar (donuslerde dogru yone animasyon icin)
+    const angles = [P.s[2] * 90];
+    run.steps.forEach(st => {
+      const a = angles[angles.length - 1];
+      angles.push(st.act === 'R' ? a + 90 : st.act === 'L' ? a - 90 : a);
+    });
+    stopTimer();
+    cur = { P, run, k: 0, mode: 'locked', angles, id };
+
+    const dir = DIRS[P.s[2]];
+    let place = `<div class="row"><span class="lab">${legendIcon('start')}BAŞLA</span><div class="coords"><span class="co">${co(P.s)}</span><span class="dirnote">${dir.ar} ${dir.tr}</span></div></div>`;
+    place += `<div class="row"><span class="lab">${legendIcon('goal')}HEDEF</span><div class="coords"><span class="co">${co(P.g)}</span></div></div>`;
+    if (P.w.length) place += `<div class="row"><span class="lab">${legendIcon('wall')}Duvar ×${P.w.length}</span><div class="coords">${sortCells(P.w).map(c => `<span class="co">${co(c)}</span>`).join('')}</div></div>`;
+    if (P.p.length) place += `<div class="row"><span class="lab">${legendIcon('pit')}Çukur ×${P.p.length}</span><div class="coords">${sortCells(P.p).map(c => `<span class="co">${co(c)}</span>`).join('')}</div></div>`;
+    if (P.c.length) place += `<div class="row"><span class="lab">${legendIcon('cry')}Kristal ×${P.c.length}</span><div class="coords">${sortCells(P.c).map(c => `<span class="co">${co(c)}</span>`).join('')}</div></div>`;
+
+    const items = [];
+    ['F', 'R', 'L'].forEach(a => { if (inv[a]) items.push(`<span class="item">${actTile(a)}<span class="x">×${inv[a]}</span></span>`); });
+    ['W', 'P'].forEach(c => { if (inv[c]) items.push(`<span class="item">${ifTile(c)}<span class="x">×${inv[c]}</span></span>`); });
+    const total = inv.F + inv.B + inv.R + inv.L + inv.W + inv.P;
+    const nIf = inv.W + inv.P;
+    let rem = `<span>Toplam <b>${total}</b> parça. Hepsi kullanılacak.</span>`;
+    if (nIf) rem += `<span>${nIf === 1 ? 'EĞER parçası' : 'Her EĞER parçası'} yalnızca önünde gerçekten ${inv.W && inv.P ? 'duvar ya da çukur' : inv.W ? 'duvar' : 'çukur'} olan yerde işe yarar. EVET tarafına konan parça orada çalışır.</span>`;
+    if (P.c.length) rem += `<span>Önce ${P.c.length === 1 ? 'kristal' : 'bütün kristaller'} toplanır, sonra hedef açılır.</span>`;
+
+    const s = stars[id] || 0;
+    app.innerHTML = `<header class="bar"><div class="wrap">
+        <button class="back" id="back" aria-label="Bulmaca listesine dön">← <span>Liste</span></button>
+        <h1>Bulmaca <span class="mono">${id}</span> <span class="chip ${lv.key}">${lv.name}</span></h1>
+        <div class="spacer"></div>
+        <div class="nav"><button id="prev" aria-label="Önceki bulmaca" ${id <= 1 ? 'disabled' : ''}>‹</button><button id="next" aria-label="Sonraki bulmaca" ${id >= 100 ? 'disabled' : ''}>›</button></div>
+      </div></header>
+      <main class="wrap puzzle">
+        <div class="col-board">
+          <div class="boardbox">${boardSVG(P)}</div>
+          <div class="play" id="play" hidden>
+            <div class="btns">
+              <button class="btn primary" id="pplay">▶ Oynat</button>
+              <button class="btn" id="pprev" aria-label="Bir adım geri">‹ Geri</button>
+              <button class="btn" id="pnext" aria-label="Bir adım ileri">İleri ›</button>
+              <button class="btn" id="preset">Başa al</button>
+            </div>
+            <div class="status" id="status" aria-live="polite"></div>
+          </div>
+        </div>
+        <div class="col-info">
+          ${chapLine(id)}
+          <section class="card"><h2><span class="stepno">1</span>Tahtayı kurun</h2><div class="place">${place}</div></section>
+          <section class="card"><h2><span class="stepno">2</span>Çocuğa bu parçaları verin</h2>
+            <div class="inv">${items.join('')}</div>
+            <div class="remind">${rem}</div>
+          </section>
+          <section class="card"><h2><span class="stepno">3</span>Çözüm</h2><div id="sol"></div></section>
+          <section class="card"><h2>Nasıl gitti?</h2>
+            <div class="stars" role="group" aria-label="Sonucu işaretleyin">
+              ${[[3, 'İlk denemede çözdü'], [2, '1–2 düzeltmeyle çözdü'], [1, 'Yardımla çözdü']].map(([n, t]) =>
+                `<button class="starbtn" data-s="${n}" aria-pressed="${s === n}"><span class="s">${'★'.repeat(n)}</span><small>${t}</small></button>`).join('')}
+            </div>
+            <div class="nextrow">${id < 100 ? `<button class="btn" id="go-next">Sonraki bulmaca: ${id + 1} ›</button>` : ''}<button class="btn" id="go-list">Listeye dön</button></div>
+          </section>
+        </div>
+      </main>`;
+    document.getElementById('back').onclick = () => { location.hash = ''; };
+    document.getElementById('go-list').onclick = () => { location.hash = ''; };
+    const gn = document.getElementById('go-next'); if (gn) gn.onclick = () => { location.hash = 'b' + (id + 1); };
+    document.getElementById('prev').onclick = () => { if (id > 1) location.hash = 'b' + (id - 1); };
+    document.getElementById('next').onclick = () => { if (id < 100) location.hash = 'b' + (id + 1); };
+    app.querySelectorAll('.starbtn').forEach(b => b.onclick = () => {
+      const n = +b.dataset.s;
+      if (stars[id] === n) delete stars[id]; else stars[id] = n;
+      saveStars();
+      app.querySelectorAll('.starbtn').forEach(x => x.setAttribute('aria-pressed', String(stars[id] === +x.dataset.s)));
+    });
+    renderSolution();
+    setPose(0, true);
+    window.scrollTo(0, 0);
+  }
+
+  function chapterOf(id) { return CHAPTERS.find(c => id >= c.from && id <= c.to); }
+  function chapLine(id) {
+    const c = chapterOf(id);
+    if (!c) return '';
+    const no = CHAPTERS.filter(x => x.level === c.level).indexOf(c) + 1;
+    return `<p class="chapline"><b>Bölüm ${no} · ${esc(c.name)}</b><span>${esc(c.goal)}</span><span class="mono">${id - c.from + 1}/${c.to - c.from + 1}</span></p>`;
+  }
+
+  function flowHTML(P, upto) {
+    // upto: kac satir gorunur (Infinity = hepsi)
+    let h = `<ol class="flow" id="flow"><li class="cap"><span class="n"></span><span>${'<span class="tile go">BAŞLA</span>'}</span></li>`;
+    P.prog.forEach((l, i) => {
+      if (i >= upto) { h += `<li><span class="n">${i + 1}</span><div class="hidden-line" aria-label="gizli satır"></div></li>`; return; }
+      if (l[0] === 'A') {
+        h += `<li data-pc="${i}"><span class="n">${i + 1}</span><span>${actTile(l[1])}</span></li>`;
+      } else {
+        h += `<li data-pc="${i}"><span class="n">${i + 1}</span><div class="ifbox">
+          <div class="q"><span class="dia" aria-hidden="true"></span>EĞER ${COND[l[1]]}</div>
+          <div class="arms">
+            <div class="arm yes" data-arm="yes"><span class="al">◄ EVET</span>${actTile(l[2])}</div>
+            <div class="arm no" data-arm="no"><span class="al">HAYIR ►</span><span class="tile empty">hiçbir şey yapma</span></div>
+          </div></div></li>`;
+      }
+    });
+    if (upto >= P.prog.length) {
+      h += `<li class="cap"><span class="n"></span><span><span class="tile stop">BİTİR</span></span></li>`;
+    }
+    return h + '</ol>';
+  }
+
+  function renderSolution() {
+    const box = document.getElementById('sol');
+    const P = cur.P;
+    const play = document.getElementById('play');
+    if (cur.mode === 'locked') {
+      play.hidden = true;
+      box.innerHTML = `<div class="lock">
+        <p class="muted">Çözüm gizli. Çocuk takılırsa önce ipucu verin: "Hedefe en kısa yoldan git" deyin ya da aşağıdan programın kaç satır olduğunu ve ilk satırı gösterin.</p>
+        <div class="btns"><button class="btn" id="hint">İpucu göster</button><button class="btn warn" id="reveal">Çözümü göster</button></div></div>`;
+      document.getElementById('hint').onclick = () => { cur.mode = 'hint'; renderSolution(); };
+      document.getElementById('reveal').onclick = () => { cur.mode = 'confirm'; renderSolution(); };
+    } else if (cur.mode === 'hint') {
+      play.hidden = true;
+      box.innerHTML = `<p class="muted">Piyon hedefe en kısa yoldan, <b>${P.mv} kare</b> yürüyerek gider. Program <b>${P.prog.length} satır</b>. İlk satır:</p>${flowHTML(P, 1)}
+        <div class="lock"><div class="btns"><button class="btn warn" id="reveal">Tüm çözümü göster</button><button class="btn" id="hide">Gizle</button></div></div>`;
+      document.getElementById('reveal').onclick = () => { cur.mode = 'confirm'; renderSolution(); };
+      document.getElementById('hide').onclick = () => { cur.mode = 'locked'; renderSolution(); };
+    } else if (cur.mode === 'confirm') {
+      play.hidden = true;
+      box.innerHTML = `<div class="confirm"><p><b>Çocuk kendisi denedi mi?</b> Çözümü görünce bulmacanın tadı kaçar. Ekranı çocuktan uzak tutun.</p>
+        <div class="lock"><div class="btns"><button class="btn warn" id="yes">Evet, göster</button><button class="btn" id="no">Vazgeç</button></div></div></div>`;
+      document.getElementById('yes').onclick = () => { cur.mode = 'open'; renderSolution(); };
+      document.getElementById('no').onclick = () => { cur.mode = 'locked'; renderSolution(); };
+    } else {
+      play.hidden = false;
+      box.innerHTML = `<p class="muted">Bu bulmacanın tek doğru çözümü var. Oynat'a basın; piyon tahtada adım adım yürür, çalışan satır işaretlenir.</p>${flowHTML(P, Infinity)}
+        <div><button class="btn" id="hide">Çözümü gizle</button></div>`;
+      document.getElementById('hide').onclick = () => { stopTimer(); cur.mode = 'locked'; setPose(0, true); renderSolution(); };
+      document.getElementById('pplay').onclick = togglePlay;
+      document.getElementById('pnext').onclick = () => { stopTimer(); step(1); };
+      document.getElementById('pprev').onclick = () => { stopTimer(); step(-1); };
+      document.getElementById('preset').onclick = () => { stopTimer(); setPose(0, true); };
+      setPose(cur.k, true);
+    }
+  }
+
+  function setPose(k, instant) {
+    const { P, run, angles } = cur;
+    cur.k = k;
+    const robot = document.getElementById('robot');
+    if (!robot) return;
+    const pos = k === 0 ? P.s : run.steps[k - 1].to;
+    if (instant) robot.style.transition = 'none';
+    robot.style.transform = `translate(${cx(pos[0])}px, ${cy(pos[1])}px) rotate(${angles[k]}deg)`;
+    if (instant) { robot.getBoundingClientRect(); robot.style.transition = ''; }
+    // kristaller
+    const cm = k === 0 ? 0 : run.steps[k - 1].cm;
+    P.c.forEach((c, i) => { const el = document.getElementById('cry' + i); if (el) el.style.opacity = (cm >> i) & 1 ? '0.18' : '1'; });
+    // iz
+    const pts = [[P.s[0], P.s[1]]];
+    for (let i = 0; i < k; i++) { const t = run.steps[i].to; const l = pts[pts.length - 1]; if (t[0] !== l[0] || t[1] !== l[1]) pts.push([t[0], t[1]]); }
+    const tr = document.getElementById('trail');
+    if (tr) tr.setAttribute('points', pts.map(p => cx(p[0]) + ',' + cy(p[1])).join(' '));
+    // akis vurgusu
+    const flow = document.getElementById('flow');
+    if (flow) {
+      flow.querySelectorAll('li.now').forEach(li => li.classList.remove('now'));
+      flow.querySelectorAll('.arm.hit').forEach(a => a.classList.remove('hit'));
+      if (k > 0 && cur.mode === 'open') {
+        const st = run.steps[k - 1];
+        const li = flow.querySelector(`li[data-pc="${st.pc}"]`);
+        if (li) {
+          li.classList.add('now');
+          if (st.cond !== null) { const a = li.querySelector(`.arm[data-arm="${st.cond ? 'yes' : 'no'}"]`); if (a) a.classList.add('hit'); }
+        }
+      }
+    }
+    updateStatus();
+  }
+
+  function updateStatus() {
+    const el = document.getElementById('status');
+    if (!el || cur.mode !== 'open') return;
+    const { P, run, k } = cur;
+    const n = run.steps.length;
+    const btnPrev = document.getElementById('pprev'), btnNext = document.getElementById('pnext');
+    if (btnPrev) btnPrev.disabled = k === 0;
+    if (btnNext) btnNext.disabled = k >= n;
+    const pb = document.getElementById('pplay');
+    if (pb) pb.textContent = cur.timer ? '❚❚ Durdur' : (k >= n ? '▶ Baştan oynat' : '▶ Oynat');
+    if (k === 0) { el.innerHTML = `<span class="counter">Adım 0/${n}</span><br>Piyon <b>${co(P.s)}</b> karesinde, ${DIRS[P.s[2]].tr}.`; return; }
+    const st = run.steps[k - 1];
+    const l = P.prog[st.pc];
+    let what;
+    if (l[0] === 'A') what = `<b>${ACT[st.act].name}</b>`;
+    else {
+      what = `EĞER ${COND[l[1]]} → <b>${st.cond ? 'EVET' : 'HAYIR'}</b> → ` + (st.act ? `<b>${ACT[st.act].name}</b>` : 'hiçbir şey yapılmadı');
+    }
+    let tail = '';
+    if (st.collect !== undefined) tail = ` Kristal toplandı.`;
+    if (k === n && run.status === 'ok') tail += ` <span class="ok">Hedefe vardı, bütün parçalar çalıştı.</span>`;
+    el.innerHTML = `<span class="counter">Adım ${k}/${n} · ${st.pc + 1}. satır</span><br>${what}. Piyon <b>${co(st.to)}</b>.${tail}`;
+  }
+
+  function step(delta) {
+    const n = cur.run.steps.length;
+    const k = Math.max(0, Math.min(n, cur.k + delta));
+    setPose(k, false);
+  }
+  function stopTimer() { if (cur && cur.timer) { clearInterval(cur.timer); cur.timer = null; } if (cur) updateStatus(); }
+  function togglePlay() {
+    if (cur.timer) { stopTimer(); return; }
+    const n = cur.run.steps.length;
+    if (cur.k >= n) setPose(0, true);
+    const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    cur.timer = setInterval(() => {
+      if (cur.k >= cur.run.steps.length) { stopTimer(); return; }
+      step(1);
+      if (cur.k >= cur.run.steps.length) stopTimer();
+    }, reduce ? 900 : 650);
+    updateStatus();
+  }
+
+  /* ---------- QR etiketi sayfasi (yalnizca web sitesinde) ---------- */
+  function labelHTML(kind, qr) {
+    return `<div class="label ${kind}"><div class="lh"><div class="lm" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+      <div class="lt"><b>SMART CODE</b><span>Veli rehberi · 100 bulmaca</span></div></div>
+      <div class="lq">${qr}</div>
+      <div class="lf"><b>Telefon kamerasıyla okutun</b><span>Kolay · Orta · Zor · kurulum ve çözümler</span></div></div>`;
+  }
+  function renderQR() {
+    stopTimer(); cur = null;
+    const url = location.origin + location.pathname;
+    const local = !/^https?:$/.test(location.protocol);
+    let qr = '';
+    try { qr = SC_QR.svg(url); } catch (e) { qr = '<p>QR üretilemedi.</p>'; }
+    app.innerHTML = `<header class="bar noprint"><div class="wrap">
+        <button class="back" id="back" aria-label="Bulmaca listesine dön">← <span>Liste</span></button>
+        <h1>QR etiketi</h1><div class="spacer"></div>
+        <button class="btn primary" id="print">Yazdır</button>
+      </div></header>
+      <main class="wrap qrpage">
+        <p class="muted noprint">Bu QR, sitenin şu anki adresini açar: <span class="mono url">${esc(url)}</span><br>Yazdırın, çerçeveden kesin ve tahtanın arkasına yapıştırın. Büyük etiket 10 × 12 cm, küçükler 6 × 7,2 cm.</p>
+        ${local ? '<p class="warnbox noprint">Bu sayfa bilgisayardaki bir dosyadan açıldı; bu QR telefonda çalışmaz. Siteyi GitHub Pages\'e yükleyin ve etiketi oradan yazdırın.</p>' : ''}
+        <div class="labels">${labelHTML('big', qr)}${labelHTML('small', qr)}${labelHTML('small', qr)}</div>
+      </main>`;
+    document.getElementById('back').onclick = () => { location.hash = ''; };
+    document.getElementById('print').onclick = () => { try { window.print(); } catch (e) {} };
+    window.scrollTo(0, 0);
+  }
+
+  /* ---------- yonlendirme ---------- */
+  function route() {
+    const h = (location.hash || '').replace('#', '');
+    const m = /^b(\d{1,3})$/.exec(h);
+    if (m && +m[1] >= 1 && +m[1] <= 100) { const id = +m[1]; tab = levelOf(id); renderPuzzle(id); }
+    else if (h === 'qr' && SITE) renderQR();
+    else { stopTimer(); cur = null; renderHome(h === 'kurallar'); }
+  }
+  window.addEventListener('hashchange', route);
+  route();
+})();
+</script>
+
+</body>
+</html>
