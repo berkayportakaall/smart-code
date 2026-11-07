@@ -1,5 +1,5 @@
 /* SMART CODE: internetsiz calisma icin onbellek */
-const CACHE = 'smartcode-v4';
+const CACHE = 'smartcode-v5';
 const CORE = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png',
   './icon-maskable-512.png', './apple-touch-icon.png', './favicon-32.png'];
 self.addEventListener('install', e => {
